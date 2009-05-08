@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="gb2312"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 2.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-2.0.dtd">
+
+<!-- Generated file - Do not edit! -->
+
+<hibernate-configuration>
+
+	<!-- a SessionFactory instance listed as /jndi/name -->
+	<session-factory>
+
+		<!-- properties -->
+		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+		<property name="show_sql">true</property>
+		<property name="use_outer_join">false</property>
+			<property name="connection.username">zfvims</property>
+			<property name="connection.password">leizhimin</property>
+			<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+			<property name="connection.url">jdbc:mysql://localhost:3306/zfvims</property>
+
+		<!-- mapping files -->
+	</session-factory>
+
+</hibernate-configuration>
