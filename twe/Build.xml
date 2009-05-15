@@ -32,7 +32,7 @@
     <target name="generate-mapping" depends="xdoclet">
         <hibernatedoclet destdir="${project.src.dir}" verbose="true" force="false">
             <fileset dir="${project.src.dir}">
-                <include name="**/domain/**/*.java"/>
+                <include name="edu/thu/thss/twe/graph/Join.java"/>
             </fileset>
             <hibernate version="3.0" xmlencoding="gb2312"/>
         </hibernatedoclet>
@@ -40,7 +40,7 @@
     <target name="generate-configuration" depends="xdoclet">
         <hibernatedoclet destdir="${project.src.dir}" verbose="true" force="true">
             <fileset dir="${project.src.dir}">
-                <include name="**/domain/**/*.java"/>
+                <include name="edu/thu/thss/twe/graph/Join.java"/>
             </fileset>
             <hibernatecfg
                 destinationFile="hibernate.cfg.xml"
