@@ -5,26 +5,46 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import edu.thu.thss.twe.exception.TweException;
+import edu.thu.thss.twe.model.graph.Activity;
 import edu.thu.thss.twe.model.graph.Transition;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
+import edu.thu.thss.twe.util.DateUtil;
 
 @Entity
 @Table(name = "process_instances")
 public class ProcessInstance {
 	long id;
 
-	private String key;
+	private String instanceName;
 	private WorkflowProcess workflowProcess;
 	private Token rootToken;
 	private Date startTime;
 	private Date endTime;
 
+	public ProcessInstance(WorkflowProcess process, String instanceName) {
+		if (process == null)
+			throw new TweException(
+					"error while creating process instance: invalid workflow process.");
+
+		workflowProcess = process;
+		this.instanceName = instanceName;
+		this.rootToken = new Token(this);
+		startProcess(rootToken.getCurrentActivity());
+	}
+
+	// //////////////////////////
+	// Getters and Setters
+	// //////////////////////////
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public long getId() {
 		return id;
 	}
@@ -34,15 +54,15 @@ public class ProcessInstance {
 	}
 
 	@Basic
-	public String getKey() {
-		return key;
+	public String getInstanceName() {
+		return instanceName;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setInstanceName(String instanceName) {
+		this.instanceName = instanceName;
 	}
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne
 	@JoinColumn(name = "workflow_process_id")
 	public WorkflowProcess getWorkflowProcess() {
 		return workflowProcess;
@@ -80,8 +100,12 @@ public class ProcessInstance {
 		this.endTime = endTime;
 	}
 
-	public ProcessInstance(WorkflowProcess process) {
-		workflowProcess = process;
+	// ////////////////////////
+	// Model Methods
+	// ////////////////////////
+
+	public ProcessInstance() {
+
 	}
 
 	public void signal() {
@@ -94,5 +118,12 @@ public class ProcessInstance {
 
 	public void signal(Transition transition) {
 		rootToken.signal(transition);
+	}
+
+	// /////////////////
+	// Private Methods
+	// /////////////////
+	private void startProcess(Activity startActivity) {
+		this.startTime = DateUtil.currentTime();
 	}
 }

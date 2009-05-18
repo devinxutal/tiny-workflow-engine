@@ -17,7 +17,7 @@ import edu.thu.thss.twe.model.runtime.ProcessInstance;
 import edu.thu.thss.twe.model.runtime.Token;
 import edu.thu.thss.twe.util.CollectionUtil;
 
-public class WorkflowProcessDBHelper {
+public class ModelDBHelper {
 	private Session session;
 
 	private static String find_workflow_process_by_name_and_version = "from WorkflowProcess where name=:name and version=:version";
@@ -26,7 +26,7 @@ public class WorkflowProcessDBHelper {
 	private static String find_process_instances_by_workflow_process_id = "from ProcessInstance where workflow_process_id=:id";
 	private static String find_process_instance_by_workflow_process_id_and_key = "from ProcessInstance where workflow_process_id=:id and key=:key";
 
-	public WorkflowProcessDBHelper(Session s) {
+	public ModelDBHelper(Session s) {
 		session = s;
 	}
 
