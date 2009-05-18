@@ -9,7 +9,7 @@ public class ExecutionContext {
 	private Activity sourceActivity;
 	private Transition transition;
 
-	private ExecutionContext(Token token) {
+	public ExecutionContext(Token token) {
 		this.token = token;
 	}
 
