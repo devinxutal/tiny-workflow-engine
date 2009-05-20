@@ -1,4 +1,4 @@
-package edu.thu.thss.twe.db;
+package edu.thu.thss.twe.session;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,6 +9,7 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 
 import edu.thu.thss.twe.exception.TweException;
@@ -17,16 +18,17 @@ import edu.thu.thss.twe.model.runtime.ProcessInstance;
 import edu.thu.thss.twe.model.runtime.Token;
 import edu.thu.thss.twe.util.CollectionUtil;
 
-public class ModelDBHelper {
+public class ModelSession {
 	private Session session;
 
 	private static String find_workflow_process_by_name_and_version = "from WorkflowProcess where name=:name and version=:version";
 	private static String find_workflow_process_by_name = "from WorkflowProcess where name=:name order by name asc, version desc";
 	private static String find_process_instance_ids_by_workflow_process_id = "select id from ProcessInstance where workflow_process_id=:id";
-	private static String find_process_instances_by_workflow_process_id = "from ProcessInstance where workflow_process_id=:id";
 	private static String find_process_instance_by_workflow_process_id_and_key = "from ProcessInstance where workflow_process_id=:id and key=:key";
+	private static String find_process_instances_by_workflow_process_id = "from ProcessInstance where workflow_process_id=:id";
+	private static String find_process_instances = "from ProcessInstance";
 
-	public ModelDBHelper(Session s) {
+	public ModelSession(Session s) {
 		session = s;
 	}
 
@@ -73,9 +75,9 @@ public class ModelDBHelper {
 		if (process == null) {
 			throw new IllegalArgumentException("WorkflowProcess cannot be null");
 		}
-
+		Transaction tx = null;
 		try {
-			session.beginTransaction();
+			tx = session.beginTransaction();
 			// delete all the process instances of this definition
 			Query q = session
 					.createQuery(find_process_instance_ids_by_workflow_process_id);
@@ -85,7 +87,7 @@ public class ModelDBHelper {
 					processInstanceIds, Long.class)) {
 				ProcessInstance processInstance = loadProcessInstance(processInstanceId);
 				if (processInstance != null) {
-					deleteProcessInstance(processInstance);
+					deleteProcessInstanceWithoutCommit(processInstance);
 				} else {
 					// TODO log it
 				}
@@ -94,7 +96,9 @@ public class ModelDBHelper {
 			session.delete(process);
 			session.getTransaction().commit();
 		} catch (Exception e) {
-			session.getTransaction().rollback();
+			e.printStackTrace();
+			if (tx != null)
+				tx.rollback();
 			throw new TweException("could not delete " + process, e);
 		}
 	}
@@ -287,6 +291,18 @@ public class ModelDBHelper {
 		}
 	}
 
+	public List<ProcessInstance> findAllProcessInstances() {
+		try {
+			Query q = session.createQuery(find_process_instances);
+			List<?> processInstances = q.list();
+			return CollectionUtil.checkList(processInstances,
+					ProcessInstance.class);
+		} catch (Exception e) {
+
+			throw new TweException("could not find process instances");
+		}
+	}
+
 	public void saveProcessInstance(ProcessInstance processInstance) {
 		save(processInstance);
 	}
@@ -298,13 +314,17 @@ public class ModelDBHelper {
 	public void deleteProcessInstance(ProcessInstance instance) {
 		try {
 			session.beginTransaction();
-			session.delete(instance);
+			deleteProcessInstanceWithoutCommit(instance);
 			session.getTransaction().commit();
 		} catch (HibernateException e) {
 			session.getTransaction().rollback();
 			throw new TweException("process instance " + instance
 					+ " cannot be deleted.", e);
 		}
+	}
+
+	private void deleteProcessInstanceWithoutCommit(ProcessInstance instance) {
+		session.delete(instance);
 	}
 
 	/**
@@ -321,7 +341,6 @@ public class ModelDBHelper {
 			throw new TweException("could not get token " + tokenId, e);
 		}
 	}
-
 
 	// ////////////////////////////
 	/**

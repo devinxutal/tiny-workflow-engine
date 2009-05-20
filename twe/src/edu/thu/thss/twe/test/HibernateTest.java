@@ -1,31 +1,33 @@
 package edu.thu.thss.twe.test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 import java.util.Random;
 
-import org.hibernate.Session;
-
-import edu.thu.thss.twe.TweContext;
-import edu.thu.thss.twe.db.DBHelperFactory;
+import edu.thu.thss.twe.config.Configuration;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
-import edu.thu.thss.twe.util.HibernateUtil;
+import edu.thu.thss.twe.parser.ParserFactory;
 
 public class HibernateTest {
 	public static void main(String[] args) {
 		System.out.println("hello");
-		Session s = HibernateUtil.currentSession();
+		// Session s = HibernateUtil.currentSession();
 		// testStoreWorkflowProcess();
 		// testFindAllWorkflowProcesses();
-		testFindLatestWorkflowProcesses();
+		// testFindLatestWorkflowProcesses();
+		testDeleteThenSave();
+
 	}
 
 	public static void testStoreWorkflowProcess() {
 		for (int i = 0; i < 10; i++) {
 			WorkflowProcess process = new WorkflowProcess();
 			process.setName(randomName());
-			TweContext.getDefaultTweContext().deployWorkflowProcess(process);
+			Configuration.getConfiguration().getTweContext()
+					.deployWorkflowProcess(process);
 		}
-		TweContext.getDefaultTweContext().close();
+		Configuration.getConfiguration().getTweContext().close();
 	}
 
 	private static String randomName() {
@@ -37,8 +39,8 @@ public class HibernateTest {
 	}
 
 	private static void testFindAllWorkflowProcesses() {
-		List<WorkflowProcess> processes = DBHelperFactory
-				.getWorkflowProcessDBHelper().findAllWorkflowProcesses();
+		List<WorkflowProcess> processes = Configuration.getConfiguration()
+				.getTweContext().getModelSession().findAllWorkflowProcesses();
 
 		for (WorkflowProcess p : processes) {
 			System.out.println(p.getName() + "," + p.getVersion());
@@ -46,11 +48,43 @@ public class HibernateTest {
 	}
 
 	private static void testFindLatestWorkflowProcesses() {
-		List<WorkflowProcess> processes = DBHelperFactory
-				.getWorkflowProcessDBHelper().findLatestWorkflowProcesses();
+		List<WorkflowProcess> processes = Configuration.getConfiguration()
+				.getTweContext().getModelSession()
+				.findLatestWorkflowProcesses();
 
 		for (WorkflowProcess p : processes) {
 			System.out.println(p.getName() + "," + p.getVersion());
 		}
+	}
+
+	private static void testParseAndDeployWorkflowProcess() {
+		try {
+			WorkflowProcess process = ParserFactory.getXmlParser().parse(
+					new FileInputStream(new File("sample xpdl/test.xml")));
+			System.out.println(process.getName());
+			Configuration.getConfiguration().getTweContext()
+					.deployWorkflowProcess(process);
+			process.setDescrioption("ahahhaha");
+			Configuration.getConfiguration().getTweContext().getModelSession()
+					.saveWorkflowProcess(process);
+			;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void testDeleteThenSave() {
+		for (int i = 0; i < 10; i++) {
+			WorkflowProcess process = new WorkflowProcess();
+			process.setName(randomName());
+			Configuration.getConfiguration().getTweContext()
+					.deployWorkflowProcess(process);
+
+			Configuration.getConfiguration().getTweContext().getModelSession()
+					.deleteWorkflowProcess(process);
+			Configuration.getConfiguration().getTweContext().getModelSession()
+					.saveWorkflowProcess(process);
+		}
+		Configuration.getConfiguration().getTweContext().close();
 	}
 }

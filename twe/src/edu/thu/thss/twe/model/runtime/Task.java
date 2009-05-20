@@ -12,7 +12,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Activity;
+import edu.thu.thss.twe.model.graph.Participant;
 import edu.thu.thss.twe.util.DateUtil;
 
 /**
@@ -28,7 +30,7 @@ public class Task {
 	private Activity activity;
 	private Token token;
 	private ProcessInstance processInstance;
-	private String performerId;
+	private Participant performer;
 	private Date createTime;
 	private Date startTime;
 	private Date finishTime;
@@ -84,13 +86,14 @@ public class Task {
 		this.processInstance = processInstance;
 	}
 
-	@Basic
-	public String getPerformerId() {
-		return performerId;
+	@OneToOne
+	@JoinColumn(name = "participant_id")
+	public Participant getPerformer() {
+		return performer;
 	}
 
-	public void setPerformerId(String performerId) {
-		this.performerId = performerId;
+	public void setPerformer(Participant performer) {
+		this.performer = performer;
 	}
 
 	@Basic
@@ -134,11 +137,18 @@ public class Task {
 	// //////////////////////
 
 	public void start() {
+		if (this.getState() != TaskState.Created) {
+			throw new TweException("task " + this + " cannot be start again!");
+		}
 		this.setStartTime(DateUtil.currentTime());
 		this.setState(TaskState.Started);
 	}
 
 	public void finish() {
+		if (this.getState() != TaskState.Started) {
+			throw new TweException("task " + this
+					+ " cannot be finish, it has finished or not been started!");
+		}
 		this.setFinishTime(DateUtil.currentTime());
 		this.setState(TaskState.Finished);
 		this.getToken().signal();

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -34,7 +35,7 @@ public class WorkflowProcess extends WorkflowElement {
 		this.version = version;
 	}
 
-	@OneToMany(mappedBy = "workflowProcess")
+	@OneToMany(mappedBy = "workflowProcess", cascade=CascadeType.ALL)
 	public List<Activity> getActivities() {
 		return activities;
 	}
@@ -43,7 +44,7 @@ public class WorkflowProcess extends WorkflowElement {
 		this.activities = activities;
 	}
 
-	@OneToMany(mappedBy = "workflowProcess")
+	@OneToMany(mappedBy = "workflowProcess", cascade=CascadeType.ALL)
 	public List<Transition> getTransitions() {
 		return transitions;
 	}
@@ -52,7 +53,7 @@ public class WorkflowProcess extends WorkflowElement {
 		this.transitions = transitions;
 	}
 
-	@OneToMany(mappedBy = "workflowProcess")
+	@OneToMany(mappedBy = "workflowProcess", cascade=CascadeType.ALL)
 	public List<Participant> getParticipants() {
 		return participants;
 	}
@@ -61,7 +62,7 @@ public class WorkflowProcess extends WorkflowElement {
 		this.participants = participants;
 	}
 
-	@OneToMany(mappedBy = "workflowProcess")
+	@OneToMany(mappedBy = "workflowProcess", cascade=CascadeType.ALL)
 	public List<DataField> getDataFileds() {
 		return dataFileds;
 	}

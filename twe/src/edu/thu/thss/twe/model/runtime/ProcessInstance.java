@@ -1,6 +1,8 @@
 package edu.thu.thss.twe.model.runtime;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -9,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -28,6 +31,7 @@ public class ProcessInstance {
 	private Token rootToken;
 	private Date startTime;
 	private Date endTime;
+	private List<Task> tasks;
 
 	public ProcessInstance(WorkflowProcess process, String instanceName) {
 		if (process == null)
@@ -100,6 +104,15 @@ public class ProcessInstance {
 		this.endTime = endTime;
 	}
 
+	@OneToMany(mappedBy = "processInstance", cascade = CascadeType.ALL)
+	public List<Task> getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(List<Task> tasks) {
+		this.tasks = tasks;
+	}
+
 	// ////////////////////////
 	// Model Methods
 	// ////////////////////////
@@ -120,10 +133,34 @@ public class ProcessInstance {
 		rootToken.signal(transition);
 	}
 
+	public void addTask(Task task) {
+		if (this.tasks == null) {
+			tasks = new LinkedList<Task>();
+		}
+		tasks.add(task);
+		task.setProcessInstance(this);
+	}
+
+	public void removeTask(Task task) {
+		task.setProcessInstance(null);
+		if (this.tasks == null) {
+			return;
+		}
+		this.tasks.remove(task);
+	}
+
 	// /////////////////
 	// Private Methods
 	// /////////////////
 	private void startProcess(Activity startActivity) {
 		this.startTime = DateUtil.currentTime();
+		if (startActivity != null) {
+			ExecutionContext context = new ExecutionContext(rootToken);
+			rootToken.setCurrentActivity(startActivity);
+			startActivity.execute(context);
+		} else {
+			throw new TweException(
+					"cannot start instance, couldn't get start activity");
+		}
 	}
 }

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -17,13 +16,15 @@ import javax.persistence.Transient;
 
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.runtime.ExecutionContext;
+import edu.thu.thss.twe.model.runtime.Task;
 import edu.thu.thss.twe.model.runtime.Token;
+import edu.thu.thss.twe.util.DateUtil;
 
 @Entity
 @Table(name = "activities")
 public class Activity extends WorkflowElement {
 
-	private String performer;
+	private Participant performer;
 	private WorkflowProcess workflowProcess;
 
 	private List<Transition> leavingTransitions = null;
@@ -32,12 +33,13 @@ public class Activity extends WorkflowElement {
 
 	private TransitionRestriction transitionRestriction;
 
-	@Basic
-	public String getPerformer() {
+	@OneToOne
+	@JoinColumn(name = "participant_id")
+	public Participant getPerformer() {
 		return performer;
 	}
 
-	public void setPerformer(String performer) {
+	public void setPerformer(Participant performer) {
 		this.performer = performer;
 	}
 
@@ -138,11 +140,13 @@ public class Activity extends WorkflowElement {
 		// determine whether to leave
 		if (isRoute()) {
 			leave(context);
+		} else if (isTaskActivity()) {
+			createTask(context);
 		}
 	}
 
 	public void leave(ExecutionContext context) {
-		if (hasJoin()) {
+		if (hasSplit()) {
 			handleSplit(context);
 		} else {
 			leave(context, getLeavingTransition(context));
@@ -234,7 +238,15 @@ public class Activity extends WorkflowElement {
 	public List<Transition> getAvailableLeavingTransitions(
 			ExecutionContext context) {
 		List<Transition> list = new LinkedList<Transition>();
-		// TODO get available leaving transitions
+		if (this.getLeavingTransitions() == null)
+			return list;
+		for (Transition transition : getLeavingTransitions()) {
+			if (transition.getCondition() == null) {
+				list.add(transition);
+			} else {
+				// TODO evaluate condition
+			}
+		}
 		return list;
 	}
 
@@ -246,6 +258,16 @@ public class Activity extends WorkflowElement {
 	@Transient
 	public boolean isRoute() {
 		return (this.getPerformer() == null);
+	}
+
+	/**
+	 * determine whether a task should be create to execute this activity
+	 * 
+	 * @return true if a task is necessary
+	 */
+	@Transient
+	public boolean isTaskActivity() {
+		return (this.getPerformer() != null);
 	}
 
 	/**
@@ -299,16 +321,20 @@ public class Activity extends WorkflowElement {
 		Token parentToken = token.getParent();
 		if (transitionRestriction.getJoin().getJoinType() == Constants.JOIN_TYPE_XOR) {
 			// finish the join
+			if (token.isRoot()) {
+				return token;
+			}
 			if (reactivateParentTokenNeeded(context)) {
 				obsoleteChildren(parentToken);
 				parentToken.getChildren().clear();
 				parentToken.setChildren(null);
 				parentToken.setState(Token.TokenState.Active);
 				return parentToken;
-			}else{
+			} else {
 				token.setState(Token.TokenState.Obsolete);
 				parentToken.getChildren().remove(token);
-				Token newChildToken = new Token(parentToken, this.getElementId());
+				Token newChildToken = new Token(parentToken, this
+						.getElementId());
 				newChildToken.setCurrentActivity(this);
 				return newChildToken;
 			}
@@ -351,10 +377,10 @@ public class Activity extends WorkflowElement {
 	}
 
 	private void obsoleteChildren(Token parentToken) {
-		if(parentToken == null || parentToken.getChildren() ==  null){
+		if (parentToken == null || parentToken.getChildren() == null) {
 			return;
 		}
-		for(Token t: parentToken.getChildren()){
+		for (Token t : parentToken.getChildren()) {
 			t.setState(Token.TokenState.Obsolete);
 		}
 	}
@@ -397,7 +423,24 @@ public class Activity extends WorkflowElement {
 		 * 如果到达的transition数目等于父Token的子token数， 说明父Token所有的分支已经到达。可以不用子token了，
 		 * 否则，说明其一部分子token汇聚，可用一个新的子token来 替代这些token。
 		 */
-		return (context.getToken().getParent().getChildren().size() == this
-				.getArrivingTransitions().size());
+		if (context.getToken().isRoot()) {
+			return false;
+		} else {
+
+			return (context.getToken().getParent().getChildren().size() == this
+					.getArrivingTransitions().size());
+		}
+	}
+
+	private Task createTask(ExecutionContext context) {
+		Token token = context.getToken();
+		Task task = new Task();
+		task.setActivity(token.getCurrentActivity());
+		task.setToken(token);
+		task.setPerformer(task.getActivity().getPerformer());
+		token.getProcessInstance().addTask(task);
+		task.setState(Task.TaskState.Created);
+		task.setCreateTime(DateUtil.currentTime());
+		return task;
 	}
 }
