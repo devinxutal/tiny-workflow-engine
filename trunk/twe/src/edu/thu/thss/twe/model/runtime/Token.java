@@ -33,7 +33,7 @@ public class Token {
 	private Token parent = null;
 	private List<Token> children;
 	private Map<String, Token> childrenMap;
-	private TokenState state;
+	private TokenState state = TokenState.Active;
 
 	/**
 	 * used to indicate the current status of the token Active: active state
@@ -47,6 +47,9 @@ public class Token {
 	public enum TokenState {
 		Active, Inactive, Obsolete
 	};
+
+	public Token() {
+	}
 
 	public Token(ProcessInstance processInstance) {
 		this.processInstance = processInstance;
@@ -106,7 +109,7 @@ public class Token {
 		this.name = name;
 	}
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "current_activity_id")
 	public Activity getCurrentActivity() {
 		return currentActivity;
@@ -116,7 +119,7 @@ public class Token {
 		this.currentActivity = currentActivity;
 	}
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "process_instance_id")
 	public ProcessInstance getProcessInstance() {
 		return processInstance;
@@ -136,7 +139,7 @@ public class Token {
 		this.parent = parent;
 	}
 
-	@OneToMany(mappedBy = "parent")
+	@OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
 	public List<Token> getChildren() {
 		return children;
 	}
@@ -164,7 +167,7 @@ public class Token {
 					"token cannot be signalled, current activity is null");
 		}
 		ExecutionContext context = new ExecutionContext(this);
-		signal(currentActivity.getLeavingTransition(context), context);
+		currentActivity.leave(context);
 	}
 
 	public void signal(String transitionElementId) {
@@ -184,7 +187,7 @@ public class Token {
 		signal(transition, new ExecutionContext(this));
 	}
 
-	private void signal(Transition transition, ExecutionContext context) {
+	public void signal(Transition transition, ExecutionContext context) {
 		if (transition == null) {
 			throw new TweException("cannot signal, transition is null");
 		}

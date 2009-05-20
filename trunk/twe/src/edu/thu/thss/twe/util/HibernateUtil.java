@@ -16,6 +16,7 @@ import edu.thu.thss.twe.model.graph.TransitionRestriction;
 import edu.thu.thss.twe.model.graph.WorkflowElement;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
+import edu.thu.thss.twe.model.runtime.Task;
 import edu.thu.thss.twe.model.runtime.Token;
 
 public class HibernateUtil {
@@ -36,7 +37,7 @@ public class HibernateUtil {
 							WorkflowElement.class).addAnnotatedClass(
 							WorkflowProcess.class);
 			config.addPackage("edu.thu.thss.twe.runtime").addAnnotatedClass(
-					ProcessInstance.class).addAnnotatedClass(Token.class);
+					ProcessInstance.class).addAnnotatedClass(Task.class).addAnnotatedClass(Token.class);
 
 			sessionFactory = config.configure().buildSessionFactory();
 		} catch (HibernateException e) {
