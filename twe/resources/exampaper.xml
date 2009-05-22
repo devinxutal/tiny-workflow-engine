@@ -132,12 +132,12 @@
                 <Transition From="newpkg1_wp1_act6" Id="newpkg1_wp1_tra7" To="newpkg1_wp1_act7"/>
                 <Transition From="newpkg1_wp1_act7" Id="newpkg1_wp1_tra8" Name="审核不通过" To="newpkg1_wp1_act4">
                     <Condition Type="CONDITION">
-                        approved = false
+                        approved == false
                     </Condition>
                 </Transition>
                 <Transition From="newpkg1_wp1_act7" Id="newpkg1_wp1_tra9" Name="审核通过" To="newpkg1_wp1_act8">
                     <Condition Type="CONDITION">
-                        approved = true
+                        approved == true
                     </Condition>
                 </Transition>
             </Transitions>

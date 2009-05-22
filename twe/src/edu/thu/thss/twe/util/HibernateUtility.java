@@ -37,6 +37,7 @@ public class HibernateUtility {
 	}
 
 	public static void configure(Map<String, String> properties) {
+		configuration.configure();
 		for (Map.Entry<String, String> entry : properties.entrySet()) {
 			configuration.setProperty(entry.getKey(), entry.getValue());
 		}

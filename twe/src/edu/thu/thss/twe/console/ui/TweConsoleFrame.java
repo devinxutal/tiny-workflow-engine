@@ -79,8 +79,7 @@ public class TweConsoleFrame extends JFrame {
 
 	public void start() {
 		this.setVisible(true);
-		checkLogin();
-
+		login();
 	}
 
 	public void notifyUpdate() {
