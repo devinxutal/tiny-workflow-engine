@@ -34,6 +34,11 @@ public class ProcessInstance {
 	private Date endTime;
 	private List<Task> tasks;
 	private List<Variable> variables;
+	private InstanceState state = InstanceState.Created;
+
+	public enum InstanceState {
+		Created, Started, Finished
+	};
 
 	public ProcessInstance(WorkflowProcess process, String instanceName) {
 		if (process == null)
@@ -44,7 +49,7 @@ public class ProcessInstance {
 		this.instanceName = instanceName;
 		this.rootToken = new Token(this);
 		prepareVariables();
-		startProcess(rootToken.getCurrentActivity());
+		// startProcess(rootToken.getCurrentActivity());
 	}
 
 	// //////////////////////////
@@ -125,6 +130,15 @@ public class ProcessInstance {
 		this.variables = variables;
 	}
 
+	@Basic
+	public InstanceState getState() {
+		return state;
+	}
+
+	public void setState(InstanceState state) {
+		this.state = state;
+	}
+
 	// ////////////////////////
 	// Model Methods
 	// ////////////////////////
@@ -177,6 +191,34 @@ public class ProcessInstance {
 		variables.remove(v);
 	}
 
+	public void start() {
+		startProcess(this.getWorkflowProcess().getStartActivity());
+		this.state = InstanceState.Started;
+	}
+
+	/**
+	 * end this instance;
+	 */
+	public void end() {
+		if (this.getRootToken().getCurrentActivity() != this
+				.getWorkflowProcess().getEndActivity()) {
+			throw new TweException(
+					"cannot end this process instance, token hasn't arrived end activity yet");
+		}
+		// check tasks
+		if (this.getTasks() != null) {
+			for (Task task : getTasks()) {
+				if (task.getState() != Task.TaskState.Finished) {
+					throw new TweException(
+							"cannot end this process instance, task not finished.");
+				}
+			}
+		}
+		// end
+		this.endTime = DateUtil.currentTime();
+		this.state = InstanceState.Finished;
+	}
+
 	// /////////////////
 	// Private Methods
 	// /////////////////
@@ -202,4 +244,5 @@ public class ProcessInstance {
 					"cannot start instance, couldn't get start activity");
 		}
 	}
+
 }

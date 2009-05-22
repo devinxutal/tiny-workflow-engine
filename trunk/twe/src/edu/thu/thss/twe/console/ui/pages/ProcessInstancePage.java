@@ -27,6 +27,7 @@ public class ProcessInstancePage extends ConsolePage implements
 	private JTable instanceTable;
 
 	private JButton deleteButton;
+	private JButton startButton;
 	private JButton detailButton;
 
 	private ButtonPanel buttonPane;
@@ -57,9 +58,12 @@ public class ProcessInstancePage extends ConsolePage implements
 		buttonPane = new ButtonPanel();
 		this.add("South", buttonPane);
 		deleteButton = new JButton("Delete");
+		startButton = new JButton("Start");
 		detailButton = new JButton("Detail");
 		deleteButton.addActionListener(this);
+		startButton.addActionListener(this);
 		detailButton.addActionListener(this);
+		buttonPane.addButton(startButton);
 		buttonPane.addButton(deleteButton);
 		buttonPane.addButton(detailButton);
 		updateContent();
@@ -80,10 +84,17 @@ public class ProcessInstancePage extends ConsolePage implements
 		if (instanceTable == null)
 			return;
 		if (instanceTable.getSelectedRow() < 0) {
+			startButton.setEnabled(false);
 			deleteButton.setEnabled(false);
 			detailButton.setEnabled(false);
 		} else {
-
+			ProcessInstance instance = instanceTableModel.getItems().get(
+					instanceTable.getSelectedRow());
+			if (instance.getState() == ProcessInstance.InstanceState.Created) {
+				startButton.setEnabled(true);
+			} else {
+				startButton.setEnabled(false);
+			}
 			deleteButton.setEnabled(true);
 			detailButton.setEnabled(true);
 		}
@@ -98,6 +109,8 @@ public class ProcessInstancePage extends ConsolePage implements
 			deleteProcess();
 		} else if (e.getSource() == detailButton) {
 			showDetail();
+		} else if (e.getSource() == startButton) {
+			startProcess();
 		}
 	}
 
@@ -121,6 +134,25 @@ public class ProcessInstancePage extends ConsolePage implements
 				showErrorMessage("Delete failed, error occured while writing the database.");
 			}
 		}
+		consoleFrame.notifyUpdate();
+	}
+
+	private void startProcess() {
+		if (instanceTable.getSelectedRow() < 0) {
+			showErrorMessage("Cannot start process instance, no process instance is selected.");
+			return;
+		}
+		ProcessInstance process = instanceTableModel.getItems().get(
+				instanceTable.getSelectedRow());
+
+		try {
+			process.start();
+			tweContext.save(process);
+			showMessage("Process is started.");
+		} catch (TweException e) {
+			showErrorMessage("Start failed, error occured while writing the database.");
+		}
+
 		consoleFrame.notifyUpdate();
 	}
 

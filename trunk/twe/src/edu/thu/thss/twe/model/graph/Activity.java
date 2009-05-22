@@ -22,6 +22,11 @@ import edu.thu.thss.twe.model.runtime.Task;
 import edu.thu.thss.twe.model.runtime.Token;
 import edu.thu.thss.twe.util.DateUtil;
 
+/**
+ * 
+ * @author Devin
+ * 
+ */
 @Entity
 @Table(name = "activities")
 public class Activity extends WorkflowElement {
@@ -99,11 +104,21 @@ public class Activity extends WorkflowElement {
 	// Model Methods
 	// /////////////
 
+	/**
+	 * determine whether this activity has a join
+	 * 
+	 * @return
+	 */
 	public boolean hasJoin() {
 		return ((transitionRestriction != null) && (transitionRestriction
 				.getJoin() != null));
 	}
 
+	/**
+	 * determine whether this activity has a split
+	 * 
+	 * @return
+	 */
 	public boolean hasSplit() {
 		return ((transitionRestriction != null) && (transitionRestriction
 				.getSplit() != null));
@@ -129,6 +144,11 @@ public class Activity extends WorkflowElement {
 		}
 	}
 
+	/**
+	 * add a submission to this activity
+	 * 
+	 * @param s
+	 */
 	public void addSubmission(Submission s) {
 		if (submissions == null) {
 			submissions = new LinkedList<Submission>();
@@ -137,6 +157,12 @@ public class Activity extends WorkflowElement {
 		s.setActivity(this);
 	}
 
+	/**
+	 * enter the current activity.this method is not supposed to be invoked by
+	 * user.
+	 * 
+	 * @param context
+	 */
 	public void enter(ExecutionContext context) {
 		context.getToken().setCurrentActivity(this);
 		context.setTransition(null);
@@ -157,6 +183,13 @@ public class Activity extends WorkflowElement {
 
 	}
 
+	/**
+	 * execute the current activity according to the execution context. if this
+	 * is a route activiy. then leave() will be called. if this is a task
+	 * activity. a new Task will be created.
+	 * 
+	 * @param context
+	 */
 	public void execute(ExecutionContext context) {
 		// empty method, because we do not support automatic activity.
 
@@ -168,7 +201,18 @@ public class Activity extends WorkflowElement {
 		}
 	}
 
+	/**
+	 * leave the current activity through a auto-determined leaving transition,
+	 * this method is not supposed to be invoked by user. user should invoke
+	 * Token.signal to fire this action.
+	 * 
+	 * @param context
+	 */
 	public void leave(ExecutionContext context) {
+		if (this.isEndActivity()) {
+			endProcessInstance(context);
+			return;
+		}
 		if (hasSplit()) {
 			handleSplit(context);
 		} else {
@@ -176,10 +220,26 @@ public class Activity extends WorkflowElement {
 		}
 	}
 
+	/**
+	 * This method shouldn't be invoked by user. it may cause unpredictable
+	 * problems.
+	 * 
+	 * @deprecated
+	 * @param context
+	 * @param transitionElementId
+	 */
 	public void leave(ExecutionContext context, String transitionElementId) {
 		leave(context, getLeavingTransition(transitionElementId));
 	}
 
+	/**
+	 * This method shouldn't be invoked by user. it may cause unpredictable
+	 * problems.
+	 * 
+	 * @deprecated
+	 * @param context
+	 * @param transition
+	 */
 	public void leave(ExecutionContext context, Transition transition) {
 		if (transition == null) {
 			throw new TweException(
@@ -300,6 +360,17 @@ public class Activity extends WorkflowElement {
 	}
 
 	/**
+	 * determine whether this activity is the end node of the belonging process
+	 * 
+	 * @return
+	 */
+	@Transient
+	public boolean isEndActivity() {
+		return (this.getLeavingTransitions() == null || this
+				.getLeavingTransitions().size() == 0);
+	}
+
+	/**
 	 * determines the leaving transition according to the current execution
 	 * context. if there is default leaving transition, then the default one
 	 * will be returned. otherwise, the leaving transition will be determined by
@@ -350,23 +421,24 @@ public class Activity extends WorkflowElement {
 		Token parentToken = token.getParent();
 		if (transitionRestriction.getJoin().getJoinType() == Constants.JOIN_TYPE_XOR) {
 			// finish the join
-			if (token.isRoot()) {
-				return token;
-			}
-			if (reactivateParentTokenNeeded(context)) {
-				obsoleteChildren(parentToken);
-				parentToken.getChildren().clear();
-				parentToken.setChildren(null);
-				parentToken.setState(Token.TokenState.Active);
-				return parentToken;
-			} else {
-				token.setState(Token.TokenState.Obsolete);
-				parentToken.getChildren().remove(token);
-				Token newChildToken = new Token(parentToken, this
-						.getElementId());
-				newChildToken.setCurrentActivity(this);
-				return newChildToken;
-			}
+			// if (token.isRoot()) {
+			// return token;
+			// }
+			// if (reactivateParentTokenNeeded(context)) {
+			// obsoleteChildren(parentToken);
+			// parentToken.getChildren().clear();
+			// parentToken.setChildren(null);
+			// parentToken.setState(Token.TokenState.Active);
+			// return parentToken;
+			// } else {
+			// token.setState(Token.TokenState.Obsolete);
+			// parentToken.getChildren().remove(token);
+			// Token newChildToken = new Token(parentToken, this
+			// .getElementId());
+			// newChildToken.setCurrentActivity(this);
+			// return newChildToken;
+			// }
+			return token;
 		} else if (transitionRestriction.getJoin().getJoinType() == Constants.JOIN_TYPE_AND) {
 			// if all the join tokens arrive , finish the join
 			if (allJoinTokensArrived(context)) {
@@ -422,21 +494,27 @@ public class Activity extends WorkflowElement {
 		}
 		Token token = context.getToken();
 		List<Transition> trans = null;
-
-		// TODO
 		if (this.getTransitionRestriction().getSplit().getSplitType() == Constants.SPLIT_TYPE_AND) {
 			trans = this.getLeavingTransitions();
+			// create a token for each transition and launch the token.
+			for (Transition transition : trans) {
+				Token childToken = new Token(token, transition.getElementId());
+				ExecutionContext childContext = new ExecutionContext(childToken);
+				leave(childContext, transition);
+			}
+			token.setState(Token.TokenState.Inactive);
 		} else {
 			// get all available leaving transitions
 			trans = this.getAvailableLeavingTransitions(context);
+			// select the first one and move one
+			if (trans.size() == 0) {
+				throw new TweException(
+						"cannot leave this activity: no available leaving transition");
+			}
+			Transition transition = trans.get(0);
+			leave(context, transition);
 		}
-		// create a token for each transition and launch the token.
-		for (Transition transition : trans) {
-			Token childToken = new Token(token, transition.getElementId());
-			ExecutionContext childContext = new ExecutionContext(childToken);
-			leave(childContext, transition);
-		}
-		token.setState(Token.TokenState.Inactive);
+
 	}
 
 	private boolean allJoinTokensArrived(ExecutionContext context) {
@@ -486,4 +564,10 @@ public class Activity extends WorkflowElement {
 		task.setCreateTime(DateUtil.currentTime());
 		return task;
 	}
+
+	private void endProcessInstance(ExecutionContext context) {
+
+		context.getProcessInstance().end();
+	}
+
 }
