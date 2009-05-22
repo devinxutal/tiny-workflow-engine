@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -16,7 +18,9 @@ import edu.thu.thss.twe.console.model.TaskTableModel;
 import edu.thu.thss.twe.console.ui.ButtonPanel;
 import edu.thu.thss.twe.console.ui.TweConsoleFrame;
 import edu.thu.thss.twe.console.ui.UIUtil;
+import edu.thu.thss.twe.console.ui.dialogs.SubmissionDialog;
 import edu.thu.thss.twe.exception.TweException;
+import edu.thu.thss.twe.model.graph.Submission;
 import edu.thu.thss.twe.model.runtime.Task;
 
 public class TaskPage extends ConsolePage implements ListSelectionListener,
@@ -126,6 +130,7 @@ public class TaskPage extends ConsolePage implements ListSelectionListener,
 		Task task = taskTableModel.getItems().get(taskTable.getSelectedRow());
 		try {
 			task.start();
+			// task.finish(); // TODO delete this;
 			tweContext.save(task.getProcessInstance());
 			showMessage("Task is started.");
 		} catch (TweException e) {
@@ -141,11 +146,27 @@ public class TaskPage extends ConsolePage implements ListSelectionListener,
 		}
 		Task task = taskTableModel.getItems().get(taskTable.getSelectedRow());
 		try {
+			if (task.isSubmissionNeeded()) {
+				SubmissionDialog dialog = new SubmissionDialog(
+						this.consoleFrame);
+				Map<Submission, String> submissionMap = new HashMap<Submission, String>();
+				for (Submission sub : task.getActivity().getSubmissions()) {
+					dialog.setSubmission(sub);
+					dialog.setVisible(true);
+					if (dialog.cancelled()) {
+						showMessage("The finish operation is canceled.");
+						return;
+					}
+					submissionMap.put(sub, dialog.getSubmissionValue());
+				}
+				task.submitVariables(submissionMap);
+			}
 			task.finish();
 			tweContext.save(task.getProcessInstance());
-			
+
 			showMessage("Task is finished.");
 		} catch (TweException e) {
+			e.printStackTrace();
 			showErrorMessage("Operation failed, error occured while writing the database.");
 		}
 		consoleFrame.notifyUpdate();

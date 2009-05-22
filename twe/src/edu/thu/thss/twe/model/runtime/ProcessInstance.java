@@ -17,6 +17,7 @@ import javax.persistence.Table;
 
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Activity;
+import edu.thu.thss.twe.model.graph.DataField;
 import edu.thu.thss.twe.model.graph.Transition;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.util.DateUtil;
@@ -32,6 +33,7 @@ public class ProcessInstance {
 	private Date startTime;
 	private Date endTime;
 	private List<Task> tasks;
+	private List<Variable> variables;
 
 	public ProcessInstance(WorkflowProcess process, String instanceName) {
 		if (process == null)
@@ -41,6 +43,7 @@ public class ProcessInstance {
 		workflowProcess = process;
 		this.instanceName = instanceName;
 		this.rootToken = new Token(this);
+		prepareVariables();
 		startProcess(rootToken.getCurrentActivity());
 	}
 
@@ -113,6 +116,15 @@ public class ProcessInstance {
 		this.tasks = tasks;
 	}
 
+	@OneToMany(mappedBy = "processInstance", cascade = CascadeType.ALL)
+	public List<Variable> getVariables() {
+		return variables;
+	}
+
+	public void setVariables(List<Variable> variables) {
+		this.variables = variables;
+	}
+
 	// ////////////////////////
 	// Model Methods
 	// ////////////////////////
@@ -149,9 +161,36 @@ public class ProcessInstance {
 		this.tasks.remove(task);
 	}
 
+	public void addVariable(Variable v) {
+		if (this.variables == null) {
+			variables = new LinkedList<Variable>();
+		}
+		this.variables.add(v);
+		v.setProcessInstance(this);
+	}
+
+	public void removeVariable(Variable v) {
+		v.setProcessInstance(null);
+		if (this.variables == null) {
+			return;
+		}
+		variables.remove(v);
+	}
+
 	// /////////////////
 	// Private Methods
 	// /////////////////
+	private void prepareVariables() {
+		if (workflowProcess == null || workflowProcess.getDataFileds() == null) {
+			return;
+		}
+		for (DataField d : workflowProcess.getDataFileds()) {
+			Variable v = new Variable(d);
+			v.setValue(d.getInitialValue());
+			this.addVariable(v);
+		}
+	}
+
 	private void startProcess(Activity startActivity) {
 		this.startTime = DateUtil.currentTime();
 		if (startActivity != null) {

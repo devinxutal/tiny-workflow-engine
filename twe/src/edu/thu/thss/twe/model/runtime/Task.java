@@ -1,6 +1,8 @@
 package edu.thu.thss.twe.model.runtime;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -11,10 +13,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Activity;
+import edu.thu.thss.twe.model.graph.DataField;
 import edu.thu.thss.twe.model.graph.Participant;
+import edu.thu.thss.twe.model.graph.Submission;
+import edu.thu.thss.twe.util.DataTypeUtil;
 import edu.thu.thss.twe.util.DateUtil;
 
 /**
@@ -149,8 +155,88 @@ public class Task {
 			throw new TweException("task " + this
 					+ " cannot be finish, it has finished or not been started!");
 		}
+		if (!canFinish()) {
+			throw new TweException("task " + this
+					+ " cannot be finish! submission needed");
+		}
 		this.setFinishTime(DateUtil.currentTime());
 		this.setState(TaskState.Finished);
 		this.getToken().signal();
+	}
+
+	public void submitVariables(Map<Submission, String> submissions) {
+		if (this.getActivity().getSubmissions() == null) {
+			if (submissions.size() != 0) {
+				throw new TweException(
+						"cannot submit variables, no submission needed");
+			}
+			return;
+		}
+		// prepare datafield -> variable map
+		Map<DataField, Variable> variableMap = new HashMap<DataField, Variable>();
+		for (Variable v : getProcessInstance().getVariables()) {
+			variableMap.put(v.getDataField(), v);
+		}
+		// submit variables
+		for (Map.Entry<Submission, String> entry : submissions.entrySet()) {
+			Submission submission = entry.getKey();
+			if (!this.getActivity().getSubmissions().contains(submission)) {
+				throw new TweException("cannot submit variable "
+						+ submission.getDataField().getName()
+						+ ", it's not is the submission list");
+			}
+			DataField df = entry.getKey().getDataField();
+			String value = entry.getValue();
+			Variable v = variableMap.get(df);
+			if (v == null) {
+				throw new TweException("cannot submit variables, variable "
+						+ df.getName() + ", it's not in the submission list");
+			}
+			if (DataTypeUtil.isValidValue(df.getDataType(), value)) {
+				v.setValue(value);
+			} else {
+				throw new TweException("cannot submit variables, variable "
+						+ df.getName() + ", invalid value");
+			}
+
+		}
+	}
+
+	public boolean canFinish() {
+		return allVariablesSubmitted();
+	}
+
+	/**
+	 * determine whether this task need to submit some variable, and these
+	 * submissions are enforced.
+	 * 
+	 * @return
+	 */
+	@Transient
+	public boolean isSubmissionEnforced() {
+		if (this.getActivity().getSubmissions() == null)
+			return false;
+		for (Submission s : this.getActivity().getSubmissions()) {
+			if (s.isForce()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * determine whether this task need to submit some variable.
+	 * 
+	 * @return
+	 */
+	@Transient
+	public boolean isSubmissionNeeded() {
+
+		return (this.getActivity().getSubmissions() != null);
+	}
+
+	private boolean allVariablesSubmitted() {
+		// TODO
+		return true;
 	}
 }

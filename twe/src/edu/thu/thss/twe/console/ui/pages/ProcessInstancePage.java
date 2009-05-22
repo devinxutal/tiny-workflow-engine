@@ -57,7 +57,7 @@ public class ProcessInstancePage extends ConsolePage implements
 		buttonPane = new ButtonPanel();
 		this.add("South", buttonPane);
 		deleteButton = new JButton("Delete");
-		detailButton = new JButton("Create Instance");
+		detailButton = new JButton("Detail");
 		deleteButton.addActionListener(this);
 		detailButton.addActionListener(this);
 		buttonPane.addButton(deleteButton);

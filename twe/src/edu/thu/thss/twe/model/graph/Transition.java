@@ -7,6 +7,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import edu.thu.thss.twe.eval.Evaluator;
+import edu.thu.thss.twe.eval.evaluator.BasicEvaluator;
+import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.runtime.ExecutionContext;
 
 @Entity
@@ -68,10 +71,20 @@ public class Transition extends WorkflowElement {
 
 	public void tranfer(ExecutionContext context) {
 		context.getToken().setCurrentActivity(null);
-		// TODO evaluate condition
 		if (getCondition() != null) {
-
+			Evaluator evaluator = new BasicEvaluator();
+			Object result = evaluator.evaluate(getCondition(), context
+					.getProcessInstance());
+			if ((result instanceof Boolean)
+					&& ((Boolean) result).booleanValue()) {
+				targetActivity.enter(context);
+			} else {
+				throw new TweException(
+						"cannot transfer from this transition, condition not satisfied");
+			}
+		} else {
+			targetActivity.enter(context);
 		}
-		targetActivity.enter(context);
+
 	}
 }
