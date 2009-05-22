@@ -17,6 +17,12 @@ public class EventManager {
 	private EventManager() {
 	}
 
+	/**
+	 * Add a ProcessInstanceListener which listen the status change of process
+	 * instance
+	 * 
+	 * @param listener
+	 */
 	public void addProcessInstanceListener(ProcessInstanceListener listener) {
 		if (processInstanceListeners == null) {
 			processInstanceListeners = new LinkedList<ProcessInstanceListener>();
@@ -26,10 +32,15 @@ public class EventManager {
 
 	public void removeProcessInstanceListener(ProcessInstanceListener listener) {
 		if (processInstanceListeners != null) {
-			processInstanceListeners.add(listener);
+			processInstanceListeners.remove(listener);
 		}
 	}
 
+	/**
+	 * Add a ActivityListener which listen the status change of a
+	 * 
+	 * @param listener
+	 */
 	public void addActivityListener(ActivityListener listener) {
 		if (activityListeners == null) {
 			activityListeners = new LinkedList<ActivityListener>();
@@ -39,10 +50,15 @@ public class EventManager {
 
 	public void removeActivityListener(ActivityListener listener) {
 		if (activityListeners != null) {
-			activityListeners.add(listener);
+			activityListeners.remove(listener);
 		}
 	}
 
+	/**
+	 * Add a TaskListener which listen the status change of task
+	 * 
+	 * @param listener
+	 */
 	public void addTaskListener(TaskListener listener) {
 		if (taskListeners == null) {
 			taskListeners = new LinkedList<TaskListener>();
@@ -52,7 +68,7 @@ public class EventManager {
 
 	public void removeTaskListener(TaskListener listener) {
 		if (taskListeners != null) {
-			taskListeners.add(listener);
+			taskListeners.remove(listener);
 		}
 	}
 
