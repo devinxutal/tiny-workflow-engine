@@ -32,7 +32,7 @@ public class ProcessInstanceTableModel extends AbstractTableModel {
 	}
 
 	public int getColumnCount() {
-		return 3;
+		return 5;
 	}
 
 	public int getRowCount() {
@@ -49,9 +49,14 @@ public class ProcessInstanceTableModel extends AbstractTableModel {
 		case 0:
 			return process.getInstanceName();
 		case 1:
-			return process.getWorkflowProcess().getName();
+			return process.getWorkflowProcess().getName() + "[version "
+					+ process.getWorkflowProcess().getVersion() + "]";
 		case 2:
+			return process.getState().name();
+		case 3:
 			return process.getStartTime();
+		case 4:
+			return process.getEndTime();
 		default:
 			return null;
 		}
@@ -64,7 +69,11 @@ public class ProcessInstanceTableModel extends AbstractTableModel {
 		case 1:
 			return "Process Name";
 		case 2:
+			return "Status";
+		case 3:
 			return "Start Time";
+		case 4:
+			return "End Time";
 		default:
 			return "";
 		}

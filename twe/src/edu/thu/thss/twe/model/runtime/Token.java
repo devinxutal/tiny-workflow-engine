@@ -161,6 +161,9 @@ public class Token {
 	// Model Methods
 	// //////////////////////
 
+	/**
+	 * signal the current token to leave the current activity.
+	 */
 	public void signal() {
 		if (currentActivity == null) {
 			throw new TweException(
@@ -170,6 +173,13 @@ public class Token {
 		currentActivity.leave(context);
 	}
 
+	/**
+	 * This method shouldn't invoked by user. it may cause unpredictable
+	 * problems.
+	 * 
+	 * @deprecated
+	 * @param transitionElementId
+	 */
 	public void signal(String transitionElementId) {
 		if (currentActivity == null) {
 			throw new TweException(
@@ -179,6 +189,13 @@ public class Token {
 				new ExecutionContext(this));
 	}
 
+	/**
+	 * This method shouldn't invoked by user. it may cause unpredictable
+	 * problems.
+	 * 
+	 * @deprecated
+	 * @param transition
+	 */
 	public void signal(Transition transition) {
 		if (currentActivity == null) {
 			throw new TweException(
@@ -187,7 +204,15 @@ public class Token {
 		signal(transition, new ExecutionContext(this));
 	}
 
-	public void signal(Transition transition, ExecutionContext context) {
+	/**
+	 * This method shouldn't invoked by user. it may cause unpredictable
+	 * problems.
+	 * 
+	 * @deprecated
+	 * @param transition
+	 * @param context
+	 */
+	private void signal(Transition transition, ExecutionContext context) {
 		if (transition == null) {
 			throw new TweException("cannot signal, transition is null");
 		}
