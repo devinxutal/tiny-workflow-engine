@@ -2,6 +2,7 @@
 [*] finish process instance
 [*] event system
 [*] configuration file
-[ ] authentication and task list by performer
+[*] authentication and task list by performer
+[*] logout/login
 [ ] web development
 [ ] logging
