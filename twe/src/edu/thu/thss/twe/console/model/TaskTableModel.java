@@ -32,7 +32,7 @@ public class TaskTableModel extends AbstractTableModel {
 	}
 
 	public int getColumnCount() {
-		return 6;
+		return 7;
 	}
 
 	public int getRowCount() {
@@ -49,15 +49,20 @@ public class TaskTableModel extends AbstractTableModel {
 		case 0:
 			return task.getActivity().getName();
 		case 1:
-			return task.getPerformer().getName();
+			return task.getProcessInstance().getInstanceName();
 		case 2:
-			return task.getState().name();
+			return task.getPerformer().getName();
 		case 3:
-			return task.getCreateTime();
+			return task.getState().name();
 		case 4:
-			return task.getStartTime();
+			return task.getCreateTime() == null ? "" : task.getCreateTime()
+					.toGMTString();
 		case 5:
-			return task.getFinishTime();
+			return task.getStartTime() == null ? "" : task.getStartTime()
+					.toGMTString();
+		case 6:
+			return task.getFinishTime() == null ? "" : task.getFinishTime()
+					.toGMTString();
 		default:
 			return null;
 		}
@@ -68,14 +73,16 @@ public class TaskTableModel extends AbstractTableModel {
 		case 0:
 			return "Task Name";
 		case 1:
-			return "Performer";
+			return "Beloing Instance";
 		case 2:
-			return "Status";
+			return "Performer";
 		case 3:
-			return "Create Time";
+			return "Status";
 		case 4:
-			return "Start Time";
+			return "Create Time";
 		case 5:
+			return "Start Time";
+		case 6:
 			return "Finish Time";
 		default:
 			return "";

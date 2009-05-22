@@ -54,9 +54,11 @@ public class ProcessInstanceTableModel extends AbstractTableModel {
 		case 2:
 			return process.getState().name();
 		case 3:
-			return process.getStartTime();
+			return process.getStartTime() == null ? "" : process.getStartTime()
+					.toGMTString();
 		case 4:
-			return process.getEndTime();
+			return process.getEndTime() == null ? "" : process.getEndTime()
+					.toGMTString();
 		default:
 			return null;
 		}

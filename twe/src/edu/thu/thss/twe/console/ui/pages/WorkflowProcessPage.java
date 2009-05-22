@@ -30,6 +30,7 @@ import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
 import edu.thu.thss.twe.parser.Parser;
 import edu.thu.thss.twe.parser.ParserFactory;
+import edu.thu.thss.twe.util.DateUtil;
 import edu.thu.thss.twe.util.ModelVisualizer;
 
 public class WorkflowProcessPage extends ConsolePage implements
@@ -218,7 +219,7 @@ public class WorkflowProcessPage extends ConsolePage implements
 			try {
 				ProcessInstance instance = new ProcessInstance(process, process
 						.getName()
-						+ "_instance");
+						+ "_instance_" + DateUtil.currentTime().toGMTString());
 				tweContext.getModelSession().saveProcessInstance(instance);
 				showMessage("Create instance succeed");
 
