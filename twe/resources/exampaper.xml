@@ -19,7 +19,7 @@
                 </Created>
             </ProcessHeader>
             <DataFields>
-                <DataField Id="datafield_approved" IsArray="FALSE" Name="appoved">
+                <DataField Id="datafield_approved" IsArray="FALSE" Name="approved">
                     <DataType>
                         <BasicType Type="BOOLEAN"/>
                     </DataType>
