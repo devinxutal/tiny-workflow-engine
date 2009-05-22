@@ -15,6 +15,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import edu.thu.thss.twe.event.EventManager;
+import edu.thu.thss.twe.event.ProcessInstanceEvent;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Activity;
 import edu.thu.thss.twe.model.graph.DataField;
@@ -50,6 +52,9 @@ public class ProcessInstance {
 		this.rootToken = new Token(this);
 		prepareVariables();
 		// startProcess(rootToken.getCurrentActivity());
+		// fire event
+		EventManager.getEventManager().fireProcessInstanceCreated(
+				new ProcessInstanceEvent(this));
 	}
 
 	// //////////////////////////
@@ -194,6 +199,9 @@ public class ProcessInstance {
 	public void start() {
 		startProcess(this.getWorkflowProcess().getStartActivity());
 		this.state = InstanceState.Started;
+		// fire event
+		EventManager.getEventManager().fireProcessInstanceCreated(
+				new ProcessInstanceEvent(this));
 	}
 
 	/**
@@ -217,6 +225,9 @@ public class ProcessInstance {
 		// end
 		this.endTime = DateUtil.currentTime();
 		this.state = InstanceState.Finished;
+		// fire event
+		EventManager.getEventManager().fireProcessInstanceCreated(
+				new ProcessInstanceEvent(this));
 	}
 
 	// /////////////////

@@ -16,6 +16,8 @@ import javax.persistence.Transient;
 
 import edu.thu.thss.twe.eval.Evaluator;
 import edu.thu.thss.twe.eval.evaluator.BasicEvaluator;
+import edu.thu.thss.twe.event.EventManager;
+import edu.thu.thss.twe.event.ProcessInstanceEvent;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.runtime.ExecutionContext;
 import edu.thu.thss.twe.model.runtime.Task;
@@ -164,6 +166,11 @@ public class Activity extends WorkflowElement {
 	 * @param context
 	 */
 	public void enter(ExecutionContext context) {
+		// fire event
+		EventManager.getEventManager().fireBeforeActivityEntered(
+				new ProcessInstanceEvent(context.getProcessInstance(), context
+						.getToken()));
+		// enter
 		context.getToken().setCurrentActivity(this);
 		context.setTransition(null);
 		context.setSourceActivity(null);
@@ -173,9 +180,17 @@ public class Activity extends WorkflowElement {
 			if (joinedToken != null) {
 				joinedToken.setCurrentActivity(this);
 				ExecutionContext newContext = new ExecutionContext(joinedToken);
+				// fire event
+				EventManager.getEventManager().fireAfterActivityEntered(
+						new ProcessInstanceEvent(newContext
+								.getProcessInstance(), newContext.getToken()));
 				execute(newContext);
 			}
 		} else {
+			// fire event
+			EventManager.getEventManager().fireAfterActivityEntered(
+					new ProcessInstanceEvent(context.getProcessInstance(),
+							context.getToken()));
 			// execute the activity
 			context.getToken().setCurrentActivity(this);
 			execute(context);
@@ -191,13 +206,25 @@ public class Activity extends WorkflowElement {
 	 * @param context
 	 */
 	public void execute(ExecutionContext context) {
-		// empty method, because we do not support automatic activity.
-
+		// fire event
+		EventManager.getEventManager().fireBeforeActivityExecuted(
+				new ProcessInstanceEvent(context.getProcessInstance(), context
+						.getToken()));
 		// determine whether to leave
 		if (isRoute()) {
+			// fire event
+
+			EventManager.getEventManager().fireAfterActivityExecuted(
+					new ProcessInstanceEvent(context.getProcessInstance(),
+							context.getToken()));
+			// leave
 			leave(context);
 		} else if (isTaskActivity()) {
 			createTask(context);
+			// fire event
+			EventManager.getEventManager().fireAfterActivityExecuted(
+					new ProcessInstanceEvent(context.getProcessInstance(),
+							context.getToken()));
 		}
 	}
 
@@ -209,6 +236,10 @@ public class Activity extends WorkflowElement {
 	 * @param context
 	 */
 	public void leave(ExecutionContext context) {
+		// fire event
+		EventManager.getEventManager().fireBeforeActivityLeaved(
+				new ProcessInstanceEvent(context.getProcessInstance(), context
+						.getToken()));
 		if (this.isEndActivity()) {
 			endProcessInstance(context);
 			return;
@@ -562,6 +593,10 @@ public class Activity extends WorkflowElement {
 		token.getProcessInstance().addTask(task);
 		task.setState(Task.TaskState.Created);
 		task.setCreateTime(DateUtil.currentTime());
+		// fire event;
+		EventManager.getEventManager().fireTaskCreated(
+				new ProcessInstanceEvent(context.getProcessInstance(), task,
+						context.getToken()));
 		return task;
 	}
 
