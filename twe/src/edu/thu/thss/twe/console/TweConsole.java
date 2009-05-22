@@ -6,7 +6,6 @@ import edu.thu.thss.twe.console.ui.TweConsoleFrame;
 
 public class TweConsole {
 	public static void main(String[] args) {
-
 		TweContext context = Configuration.getConfiguration().getTweContext();
 		TweConsoleFrame frame = new TweConsoleFrame(context);
 		frame.start();

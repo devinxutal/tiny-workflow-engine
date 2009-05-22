@@ -24,7 +24,7 @@ public abstract class ConsolePage extends JPanel {
 
 	public abstract void updateContent();
 
-	public abstract void updateUI();
+	public abstract void updateControls();
 
 	public TweContext getTweContext() {
 		return tweContext;

@@ -114,7 +114,7 @@ public class SubmissionDialog extends JDialog implements WindowListener,
 	private void finishSubmission() {
 		if (validateInput()) {
 			this.cancel = false;
-			this.submissionValue = valueArea.getText();
+			this.submissionValue = valueArea.getText().trim();
 			this.setVisible(false);
 		} else {
 			JOptionPane.showMessageDialog(this,

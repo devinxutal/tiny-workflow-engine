@@ -118,7 +118,7 @@ public class TaskSession {
 			return findTasks(loadParticipant(performerId));
 		} catch (Exception e) {
 
-			throw new TweException("could not find all task tasks", e);
+			throw new TweException("could not find alltasks", e);
 		}
 	}
 
@@ -128,7 +128,7 @@ public class TaskSession {
 		}
 		try {
 			Query query = session.createQuery(find_tasks_by_performer_id);
-			query.setLong(0, performer.getId());
+			query.setLong("pid", performer.getId());
 			List<?> tasks = query.list();
 			return CollectionUtil.checkList(tasks, Task.class);
 		} catch (Exception e) {
@@ -145,7 +145,7 @@ public class TaskSession {
 		try {
 			Query query = session
 					.createQuery(find_tasks_by_process_instance_id);
-			query.setLong(0, instance.getId());
+			query.setLong("iid", instance.getId());
 			List<?> tasks = query.list();
 			return CollectionUtil.checkList(tasks, Task.class);
 		} catch (Exception e) {
@@ -164,7 +164,7 @@ public class TaskSession {
 		try {
 			Query query = session
 					.createQuery(find_tasks_by_process_instance_id_and_performer_id);
-			query.setLong(0, instance.getId());
+			query.setLong("iid", instance.getId());
 			query.setLong(1, performer.getId());
 			List<?> tasks = query.list();
 			return CollectionUtil.checkList(tasks, Task.class);

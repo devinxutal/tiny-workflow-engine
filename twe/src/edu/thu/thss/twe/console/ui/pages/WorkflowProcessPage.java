@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -77,19 +78,32 @@ public class WorkflowProcessPage extends ConsolePage implements
 	}
 
 	public void updateContent() {
-		updateUI();
-		if (tweContext == null)
-			return;
-		processTableModel.setItems(tweContext.getModelSession()
-				.findAllWorkflowProcesses());
+		updateControls();
+		if (tweContext == null ||tweContext.getPerformerId() == null) {
+			processTableModel.setItems(new LinkedList<WorkflowProcess>());
+		} else if (tweContext.isSuperMode()) {
+
+			processTableModel.setItems(tweContext.getModelSession()
+					.findAllWorkflowProcesses());
+		} else {
+			processTableModel.setItems(new LinkedList<WorkflowProcess>());
+		}
+
 		processTableModel.fireTableDataChanged();
-		updateUI();
+		updateControls();
 
 	}
 
-	public void updateUI() {
-		if (processTable == null)
+	public void updateControls() {
+		if (tweContext == null) {
+			this.buttonPane.setEnabled(false);
 			return;
+		}
+		if (!tweContext.isSuperMode()) {
+			this.buttonPane.setEnabled(false);
+			return;
+		}
+		this.buttonPane.setEnabled(true);
 		if (processTable.getSelectedRow() < 0) {
 			deleteButton.setEnabled(false);
 			instanceButton.setEnabled(false);
@@ -101,7 +115,7 @@ public class WorkflowProcessPage extends ConsolePage implements
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		updateUI();
+		updateControls();
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -178,7 +192,7 @@ public class WorkflowProcessPage extends ConsolePage implements
 						+ "_instance");
 				tweContext.getModelSession().saveProcessInstance(instance);
 				showMessage("Create instance succeed");
-				
+
 			} catch (TweException e) {
 				showErrorMessage("Create failed, error occured while writing the database.");
 			}
