@@ -26,8 +26,8 @@ import edu.thu.thss.twe.console.ui.pages.WorkflowProcessPage;
 public class TweConsoleFrame extends JFrame {
 	private TweContext tweContext;
 
-	private static int HEIGHT = 600;
-	private static int WIDTH = 700;
+	private static int HEIGHT = 800;
+	private static int WIDTH = 1000;
 
 	private List<ConsolePage> pages = new LinkedList<ConsolePage>();;
 	private JTabbedPane tabbedPane;

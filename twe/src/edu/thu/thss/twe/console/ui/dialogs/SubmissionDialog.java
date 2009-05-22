@@ -22,7 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import edu.thu.thss.twe.console.ui.ButtonPanel;
+import edu.thu.thss.twe.console.ui.panels.ButtonPanel;
 import edu.thu.thss.twe.model.graph.Submission;
 import edu.thu.thss.twe.util.DataTypeUtil;
 
@@ -114,7 +114,7 @@ public class SubmissionDialog extends JDialog implements WindowListener,
 	private void finishSubmission() {
 		if (validateInput()) {
 			this.cancel = false;
-			this.submissionValue = valueArea.getText().trim();
+			this.submissionValue = valueArea.getText();
 			this.setVisible(false);
 		} else {
 			JOptionPane.showMessageDialog(this,

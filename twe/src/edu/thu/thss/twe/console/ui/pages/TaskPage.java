@@ -16,10 +16,10 @@ import javax.swing.event.ListSelectionListener;
 
 import edu.thu.thss.twe.TweContext;
 import edu.thu.thss.twe.console.model.TaskTableModel;
-import edu.thu.thss.twe.console.ui.ButtonPanel;
 import edu.thu.thss.twe.console.ui.TweConsoleFrame;
 import edu.thu.thss.twe.console.ui.UIUtil;
 import edu.thu.thss.twe.console.ui.dialogs.SubmissionDialog;
+import edu.thu.thss.twe.console.ui.panels.ButtonPanel;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Submission;
 import edu.thu.thss.twe.model.runtime.Task;

@@ -2,6 +2,8 @@ package edu.thu.thss.twe.console.ui.pages;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -19,14 +21,16 @@ import javax.swing.event.ListSelectionListener;
 
 import edu.thu.thss.twe.TweContext;
 import edu.thu.thss.twe.console.model.WorkflowProcessTableModel;
-import edu.thu.thss.twe.console.ui.ButtonPanel;
 import edu.thu.thss.twe.console.ui.TweConsoleFrame;
 import edu.thu.thss.twe.console.ui.UIUtil;
+import edu.thu.thss.twe.console.ui.dialogs.ImageDialog;
+import edu.thu.thss.twe.console.ui.panels.ButtonPanel;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
 import edu.thu.thss.twe.parser.Parser;
 import edu.thu.thss.twe.parser.ParserFactory;
+import edu.thu.thss.twe.util.ModelVisualizer;
 
 public class WorkflowProcessPage extends ConsolePage implements
 		ListSelectionListener, ActionListener {
@@ -37,6 +41,7 @@ public class WorkflowProcessPage extends ConsolePage implements
 	private JButton deleteButton;
 	private JButton instanceButton;
 	private JButton deployButton;
+	private JButton visualizeButton;
 
 	private ButtonPanel buttonPane;
 
@@ -68,18 +73,21 @@ public class WorkflowProcessPage extends ConsolePage implements
 		deleteButton = new JButton("Delete");
 		instanceButton = new JButton("Create Instance");
 		deployButton = new JButton("Deploy");
+		visualizeButton = new JButton("Visualize");
 		deleteButton.addActionListener(this);
 		instanceButton.addActionListener(this);
 		deployButton.addActionListener(this);
+		visualizeButton.addActionListener(this);
+		buttonPane.addButton(deployButton);
 		buttonPane.addButton(deleteButton);
 		buttonPane.addButton(instanceButton);
-		buttonPane.addButton(deployButton);
+		buttonPane.addButton(visualizeButton);
 		updateContent();
 	}
 
 	public void updateContent() {
 		updateControls();
-		if (tweContext == null ||tweContext.getPerformerId() == null) {
+		if (tweContext == null || tweContext.getPerformerId() == null) {
 			processTableModel.setItems(new LinkedList<WorkflowProcess>());
 		} else if (tweContext.isSuperMode()) {
 
@@ -104,13 +112,15 @@ public class WorkflowProcessPage extends ConsolePage implements
 			return;
 		}
 		this.buttonPane.setEnabled(true);
+
 		if (processTable.getSelectedRow() < 0) {
 			deleteButton.setEnabled(false);
 			instanceButton.setEnabled(false);
+			visualizeButton.setEnabled(false);
 		} else {
-
 			deleteButton.setEnabled(true);
 			instanceButton.setEnabled(true);
+			visualizeButton.setEnabled(true);
 		}
 	}
 
@@ -125,8 +135,27 @@ public class WorkflowProcessPage extends ConsolePage implements
 			createInstance();
 		} else if (e.getSource() == deployButton) {
 			deployProcess();
+		} else if (e.getSource() == visualizeButton) {
+			visualizeProcess();
 		}
 
+	}
+
+	private void visualizeProcess() {
+		if (processTable.getSelectedRow() < 0) {
+			showErrorMessage("Cannot visualize process, no process instance is selected.");
+			return;
+		}
+		WorkflowProcess process = processTableModel.getItems().get(
+				processTable.getSelectedRow());
+		ModelVisualizer visualizer = new ModelVisualizer();
+		ImageDialog dialog = new ImageDialog(consoleFrame);
+		Image img = visualizer.visualizeWorkflowProcess(process);
+		if (img == null)
+			img = Toolkit.getDefaultToolkit().getImage("resources/flower.jpg");
+		dialog.setImage(img);
+		dialog.setVisible(true);
+		dialog.dispose();
 	}
 
 	private void deployProcess() {

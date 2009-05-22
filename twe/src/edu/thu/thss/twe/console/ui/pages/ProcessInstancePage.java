@@ -2,6 +2,8 @@ package edu.thu.thss.twe.console.ui.pages;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
@@ -15,11 +17,13 @@ import javax.swing.event.ListSelectionListener;
 
 import edu.thu.thss.twe.TweContext;
 import edu.thu.thss.twe.console.model.ProcessInstanceTableModel;
-import edu.thu.thss.twe.console.ui.ButtonPanel;
 import edu.thu.thss.twe.console.ui.TweConsoleFrame;
 import edu.thu.thss.twe.console.ui.UIUtil;
+import edu.thu.thss.twe.console.ui.dialogs.ImageDialog;
+import edu.thu.thss.twe.console.ui.panels.ButtonPanel;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
+import edu.thu.thss.twe.util.ModelVisualizer;
 
 public class ProcessInstancePage extends ConsolePage implements
 		ListSelectionListener, ActionListener {
@@ -29,7 +33,7 @@ public class ProcessInstancePage extends ConsolePage implements
 
 	private JButton deleteButton;
 	private JButton startButton;
-	private JButton detailButton;
+	private JButton visualizeButton;
 
 	private ButtonPanel buttonPane;
 
@@ -54,25 +58,26 @@ public class ProcessInstancePage extends ConsolePage implements
 		instanceTable = UIUtil.createTable();
 		instanceTable.setModel(instanceTableModel);
 		instanceTable.getSelectionModel().addListSelectionListener(this);
+
 		this.add("Center", new JScrollPane(instanceTable));
 		// Button
 		buttonPane = new ButtonPanel();
 		this.add("South", buttonPane);
 		deleteButton = new JButton("Delete");
 		startButton = new JButton("Start");
-		detailButton = new JButton("Detail");
+		visualizeButton = new JButton("Visualize");
 		deleteButton.addActionListener(this);
 		startButton.addActionListener(this);
-		detailButton.addActionListener(this);
+		visualizeButton.addActionListener(this);
 		buttonPane.addButton(startButton);
 		buttonPane.addButton(deleteButton);
-		buttonPane.addButton(detailButton);
+		buttonPane.addButton(visualizeButton);
 		updateContent();
 	}
 
 	public void updateContent() {
 		updateControls();
-		if (tweContext == null ||tweContext.getPerformerId() == null) {
+		if (tweContext == null || tweContext.getPerformerId() == null) {
 			instanceTableModel.setItems(new LinkedList<ProcessInstance>());
 		} else if (tweContext.isSuperMode()) {
 			instanceTableModel.setItems(tweContext.getModelSession()
@@ -99,7 +104,7 @@ public class ProcessInstancePage extends ConsolePage implements
 		if (instanceTable.getSelectedRow() < 0) {
 			startButton.setEnabled(false);
 			deleteButton.setEnabled(false);
-			detailButton.setEnabled(false);
+			visualizeButton.setEnabled(false);
 		} else {
 			ProcessInstance instance = instanceTableModel.getItems().get(
 					instanceTable.getSelectedRow());
@@ -109,7 +114,7 @@ public class ProcessInstancePage extends ConsolePage implements
 				startButton.setEnabled(false);
 			}
 			deleteButton.setEnabled(true);
-			detailButton.setEnabled(true);
+			visualizeButton.setEnabled(true);
 		}
 
 	}
@@ -120,19 +125,31 @@ public class ProcessInstancePage extends ConsolePage implements
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == deleteButton) {
-			deleteProcess();
-		} else if (e.getSource() == detailButton) {
-			showDetail();
+			deleteInstance();
+		} else if (e.getSource() == visualizeButton) {
+			visualizeInstance();
 		} else if (e.getSource() == startButton) {
-			startProcess();
+			startInstance();
 		}
 	}
 
-	private void showDetail() {
-
+	private void visualizeInstance() {
+		if (instanceTable.getSelectedRow() < 0) {
+			showErrorMessage("Cannot visualize process instance, no process instance is selected.");
+			return;
+		}
+		ProcessInstance process = instanceTableModel.getItems().get(
+				instanceTable.getSelectedRow());
+		ModelVisualizer visualizer = new ModelVisualizer();
+		ImageDialog dialog = new ImageDialog(consoleFrame);
+		Image img = visualizer.visualizeProcessInstance(process);
+		img = Toolkit.getDefaultToolkit().getImage("resources/flower.jpg");
+		dialog.setImage(img);
+		dialog.setVisible(true);
+		dialog.dispose();
 	}
 
-	private void deleteProcess() {
+	private void deleteInstance() {
 		if (instanceTable.getSelectedRow() < 0) {
 			showErrorMessage("Cannot delete process instance, no process instance is selected.");
 			return;
@@ -151,7 +168,7 @@ public class ProcessInstancePage extends ConsolePage implements
 		consoleFrame.notifyUpdate();
 	}
 
-	private void startProcess() {
+	private void startInstance() {
 		if (instanceTable.getSelectedRow() < 0) {
 			showErrorMessage("Cannot start process instance, no process instance is selected.");
 			return;
