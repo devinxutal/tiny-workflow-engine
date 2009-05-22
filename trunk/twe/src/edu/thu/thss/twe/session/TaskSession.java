@@ -17,10 +17,14 @@ import edu.thu.thss.twe.util.CollectionUtil;
 public class TaskSession {
 	private Session session;
 
-	private static String find_all_tasks = "from Task";
-	private static String find_tasks_by_process_instance_id = "from Task where process_instance_id=:iid";
-	private static String find_tasks_by_performer_id = "from Task where participant_id=:pid";
-	private static String find_tasks_by_process_instance_id_and_performer_id = "from Task where process_instance_id=:iid and participant_id=:pid";
+	private static String order_by_string = " order by process_instance_id asc, state desc";
+	private static String find_all_tasks = "from Task" + order_by_string;
+	private static String find_tasks_by_process_instance_id = "from Task where process_instance_id=:iid"
+			+ order_by_string;
+	private static String find_tasks_by_performer_id = "from Task where participant_id=:pid"
+			+ order_by_string;
+	private static String find_tasks_by_process_instance_id_and_performer_id = "from Task where process_instance_id=:iid and participant_id=:pid"
+			+ order_by_string;
 
 	public TaskSession(Session s) {
 		session = s;
