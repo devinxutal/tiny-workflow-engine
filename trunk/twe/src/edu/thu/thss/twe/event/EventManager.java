@@ -101,7 +101,7 @@ public class EventManager {
 		}
 	}
 
-	public void fireAfteredActivityEntered(ProcessInstanceEvent event) {
+	public void fireAfterActivityEntered(ProcessInstanceEvent event) {
 		if (activityListeners != null) {
 			for (ActivityListener l : activityListeners) {
 				l.afterActivityEntered(event);

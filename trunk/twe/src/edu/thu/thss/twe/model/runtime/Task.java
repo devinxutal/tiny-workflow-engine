@@ -15,6 +15,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import edu.thu.thss.twe.event.EventManager;
+import edu.thu.thss.twe.event.ProcessInstanceEvent;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.graph.Activity;
 import edu.thu.thss.twe.model.graph.DataField;
@@ -148,6 +150,10 @@ public class Task {
 		}
 		this.setStartTime(DateUtil.currentTime());
 		this.setState(TaskState.Started);
+		// fire event
+		EventManager.getEventManager().fireTaskStarted(
+				new ProcessInstanceEvent(this.getProcessInstance(), this, this
+						.getToken()));
 	}
 
 	public void finish() {
@@ -161,6 +167,12 @@ public class Task {
 		}
 		this.setFinishTime(DateUtil.currentTime());
 		this.setState(TaskState.Finished);
+		// fire event
+		EventManager.getEventManager().fireTaskFinished(
+				new ProcessInstanceEvent(this.getProcessInstance(), this, this
+						.getToken()));
+
+		//
 		this.getToken().signal();
 	}
 
