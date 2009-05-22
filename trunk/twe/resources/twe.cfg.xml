@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<twe-configuration>
+    <property name="database.driver_class">
+        org.gjt.mm.mysql.Driver
+    </property>
+    <property name="database.username">
+        root
+    </property>
+    <property name="database.password">
+        root
+    </property>
+    <property name="database.url">
+        jdbc:mysql://localhost:3306/twe?useUnicode=true&amp;characterEncoding=UTF-8
+    </property>
+    <property name="database.dialect">
+        org.hibernate.dialect.MySQLDialect
+    </property>
+    <property name="admin.username">
+        admin
+    </property>
+    <property name="admin.password">
+        admin
+    </property>
+</twe-configuration>

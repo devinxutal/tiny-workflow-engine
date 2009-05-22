@@ -1,0 +1,19 @@
+depoly, delete workflow process, version supported
+
+multiple process intance creation supported.
+
+sequence, parallized, loop, choice supported.
+
+role based task management
+
+variable submission supported in task
+
+data, condition evaluation supported.
+
+transition auto-determined by engine according to condition evaluation
+
+event support
+
+customized configuration of security and database connection
+
+swing based console
