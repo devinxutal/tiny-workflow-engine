@@ -29,6 +29,7 @@ public class LoginDialog extends JDialog implements KeyListener, WindowListener 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setBounds((int) (dimension.getWidth() - WIDTH) / 2,
 				(int) (dimension.getHeight() - HEIGHT) / 2, WIDTH, HEIGHT);
+		this.setResizable(false);
 		initComponents();
 		this.addWindowListener(this);
 	}
@@ -94,7 +95,7 @@ public class LoginDialog extends JDialog implements KeyListener, WindowListener 
 
 	private boolean cancel = false;
 
-	public boolean cancelled(){
+	public boolean cancelled() {
 		return cancel;
 	}
 

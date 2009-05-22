@@ -14,6 +14,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import edu.thu.thss.twe.eval.Evaluator;
+import edu.thu.thss.twe.eval.evaluator.BasicEvaluator;
 import edu.thu.thss.twe.exception.TweException;
 import edu.thu.thss.twe.model.runtime.ExecutionContext;
 import edu.thu.thss.twe.model.runtime.Task;
@@ -32,6 +34,8 @@ public class Activity extends WorkflowElement {
 	private List<Transition> arrivingTransitions = null;
 
 	private TransitionRestriction transitionRestriction;
+
+	private List<Submission> submissions = null;
 
 	@OneToOne
 	@JoinColumn(name = "participant_id")
@@ -82,6 +86,15 @@ public class Activity extends WorkflowElement {
 		this.workflowProcess = workflowProcess;
 	}
 
+	@OneToMany(mappedBy = "activity", cascade = CascadeType.ALL)
+	public List<Submission> getSubmissions() {
+		return submissions;
+	}
+
+	public void setSubmissions(List<Submission> submissions) {
+		this.submissions = submissions;
+	}
+
 	// /////////////
 	// Model Methods
 	// /////////////
@@ -116,6 +129,14 @@ public class Activity extends WorkflowElement {
 		}
 	}
 
+	public void addSubmission(Submission s) {
+		if (submissions == null) {
+			submissions = new LinkedList<Submission>();
+		}
+		submissions.add(s);
+		s.setActivity(this);
+	}
+
 	public void enter(ExecutionContext context) {
 		context.getToken().setCurrentActivity(this);
 		context.setTransition(null);
@@ -124,11 +145,13 @@ public class Activity extends WorkflowElement {
 		if (hasJoin()) {
 			Token joinedToken = handleJoin(context);
 			if (joinedToken != null) {
+				joinedToken.setCurrentActivity(this);
 				ExecutionContext newContext = new ExecutionContext(joinedToken);
 				execute(newContext);
 			}
 		} else {
 			// execute the activity
+			context.getToken().setCurrentActivity(this);
 			execute(context);
 		}
 
@@ -240,11 +263,17 @@ public class Activity extends WorkflowElement {
 		List<Transition> list = new LinkedList<Transition>();
 		if (this.getLeavingTransitions() == null)
 			return list;
+		Evaluator evaluator = new BasicEvaluator();
 		for (Transition transition : getLeavingTransitions()) {
 			if (transition.getCondition() == null) {
 				list.add(transition);
 			} else {
-				// TODO evaluate condition
+				Object result = evaluator.evaluate(transition.getCondition(),
+						context.getProcessInstance());
+				if ((result instanceof Boolean)
+						&& ((Boolean) result).booleanValue()) {
+					list.add(transition);
+				}
 			}
 		}
 		return list;
@@ -348,6 +377,7 @@ public class Activity extends WorkflowElement {
 				 */
 				if (reactivateParentTokenNeeded(context)) {
 					// TODO better way to delete child tokens
+					obsoleteChildren(parentToken);
 					parentToken.getChildren().clear();
 					parentToken.setChildren(null);
 					// TODO delete the tokens from database?
@@ -391,11 +421,17 @@ public class Activity extends WorkflowElement {
 					"cannot perform split: this activity dosen't have a join");
 		}
 		Token token = context.getToken();
-		// get all available leaving transitions
-		List<Transition> alts = this.getAvailableLeavingTransitions(context);
+		List<Transition> trans = null;
 
+		// TODO
+		if (this.getTransitionRestriction().getSplit().getSplitType() == Constants.SPLIT_TYPE_AND) {
+			trans = this.getLeavingTransitions();
+		} else {
+			// get all available leaving transitions
+			trans = this.getAvailableLeavingTransitions(context);
+		}
 		// create a token for each transition and launch the token.
-		for (Transition transition : alts) {
+		for (Transition transition : trans) {
 			Token childToken = new Token(token, transition.getElementId());
 			ExecutionContext childContext = new ExecutionContext(childToken);
 			leave(childContext, transition);
@@ -408,10 +444,12 @@ public class Activity extends WorkflowElement {
 		Token parent = token.getParent();
 		int arrivedNum = 0;
 		for (Token childToken : parent.getChildren()) {
-			if (childToken.getCurrentActivity().equals(this)) {
+			if (childToken.getState() == Token.TokenState.Active
+					&& childToken.getCurrentActivity().equals(this)) {
 				arrivedNum++;
 			}
 		}
+		// TODO modify the following line:
 		if (arrivedNum == this.getArrivingTransitions().size()) {
 			return true;
 		}
@@ -420,15 +458,20 @@ public class Activity extends WorkflowElement {
 
 	private boolean reactivateParentTokenNeeded(ExecutionContext context) {
 		/**
-		 * 如果到达的transition数目等于父Token的子token数， 说明父Token所有的分支已经到达。可以不用子token了，
+		 * 如果父Token的所有子Token都已经到达此节点， 说明父Token所有的分支已经到达。可以不用子token了，
 		 * 否则，说明其一部分子token汇聚，可用一个新的子token来 替代这些token。
 		 */
 		if (context.getToken().isRoot()) {
 			return false;
 		} else {
-
-			return (context.getToken().getParent().getChildren().size() == this
-					.getArrivingTransitions().size());
+			for (Token t : context.getToken().getParent().getChildren()) {
+				if (t.getState() != Token.TokenState.Obsolete) {
+					if (!t.getCurrentActivity().equals(this)) {
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 	}
 

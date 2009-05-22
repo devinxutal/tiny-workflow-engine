@@ -11,6 +11,7 @@ public class ExecutionContext {
 
 	public ExecutionContext(Token token) {
 		this.token = token;
+		this.processInstance = token.getProcessInstance();
 	}
 
 	public ProcessInstance getProcessInstance() {

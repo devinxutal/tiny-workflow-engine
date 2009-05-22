@@ -19,10 +19,12 @@ import edu.thu.thss.twe.model.graph.DataField;
 import edu.thu.thss.twe.model.graph.Join;
 import edu.thu.thss.twe.model.graph.Participant;
 import edu.thu.thss.twe.model.graph.Split;
+import edu.thu.thss.twe.model.graph.Submission;
 import edu.thu.thss.twe.model.graph.Transition;
 import edu.thu.thss.twe.model.graph.TransitionRestriction;
 import edu.thu.thss.twe.model.graph.WorkflowElement;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
+import edu.thu.thss.twe.model.graph.DataField.DataType;
 import edu.thu.thss.twe.parser.Parser;
 import edu.thu.thss.twe.util.DataTypeUtil;
 import edu.thu.thss.twe.util.TypeUtil;
@@ -42,10 +44,11 @@ public class XmlParser implements Parser {
 	private static String PERFORMER = "Performer";
 	private static String TRANSITION_RESTRICTIONS = "TransitionRestrictions";
 	private static String TRANSITION_RESTRICTION = "TransitionRestriction";
+	private static String SUBMISSIONS = "Submissions";
+	private static String SUBMISSION = "Submission";
 	private static String JOIN = "Join";
 	private static String SPLIT = "Split";
 	private static String CONDITION = "Condition";
-
 	private static String ID = "Id";
 	private static String NAME = "Name";
 	private static String DESCRIPTION = "Description";
@@ -201,9 +204,9 @@ public class XmlParser implements Parser {
 				throw new TweException("cannot parse datafield "
 						+ datafield.getName() + ": unknown type");
 			}
-			int dataType = DataTypeUtil.determineDataType(basictype
+			DataType dataType = DataTypeUtil.determineDataType(basictype
 					.attributeValue(TYPE));
-			if (dataType < 0) {
+			if (dataType == null) {
 				throw new TweException("cannot parse datafield "
 						+ datafield.getName() + ": unknown type");
 			}
@@ -260,6 +263,11 @@ public class XmlParser implements Parser {
 				if (transitionRestriction != null) {
 					parseTransitionRestriction(activity, transitionRestriction);
 				}
+			}
+			// Submissions
+			Element submissions = ele.element(SUBMISSIONS);
+			if (submissions != null) {
+				parseSubmissions(activity, submissions);
 			}
 		}
 		return true;
@@ -327,6 +335,23 @@ public class XmlParser implements Parser {
 		}
 		activity.setTransitionRestriction(tr);
 		return true;
+	}
+
+	private void parseSubmissions(Activity activity, Element submissions) {
+		for (Iterator<?> it = submissions.elementIterator(SUBMISSION); it
+				.hasNext();) {
+			Element ele = (Element) it.next();
+			String dataFieldId = ele.attributeValue(ID);
+			String forceStr = ele.attributeValue("force");
+			DataField df = this.datafields.get(dataFieldId);
+			boolean force = Boolean.parseBoolean(forceStr);
+			if (df == null) {
+				throw new TweException("cannot parse activity "
+						+ activity.getName() + ": unknown submission");
+			}
+			Submission submission = new Submission(df, force);
+			activity.addSubmission(submission);
+		}
 	}
 
 	private boolean setElementAttributes(WorkflowElement wfe, Element e) {
