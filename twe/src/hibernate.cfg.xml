@@ -9,7 +9,7 @@
             org.gjt.mm.mysql.Driver
         </property>
         <property name="hibernate.connection.password">
-            root
+            faint
         </property>
         <property name="hibernate.connection.url">
             jdbc:mysql://localhost:3306/twe?useUnicode=true&amp;characterEncoding=UTF-8

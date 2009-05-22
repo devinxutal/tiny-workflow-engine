@@ -5,6 +5,11 @@ import java.util.List;
 
 import org.hibernate.Session;
 
+import edu.thu.thss.twe.config.Configuration;
+import edu.thu.thss.twe.event.ActivityListener;
+import edu.thu.thss.twe.event.EventManager;
+import edu.thu.thss.twe.event.ProcessInstanceListener;
+import edu.thu.thss.twe.event.TaskListener;
 import edu.thu.thss.twe.model.graph.Participant;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
@@ -21,8 +26,10 @@ public class TweContext {
 	private TaskSession taskSession;
 	private String performerId = null;
 	private List<ProcessInstance> managedProcessInstances;
+	private Configuration configuration;
 
-	public TweContext(Session session) {
+	public TweContext(Configuration config, Session session) {
+		this.configuration = config;
 		this.session = session;
 		modelSession = new ModelSession(this.session);
 		taskSession = new TaskSession(this.session);
@@ -198,6 +205,49 @@ public class TweContext {
 		getModelSession().saveProcessInstance(token.getProcessInstance());
 	}
 
+	/**
+	 * Add a ProcessInstanceListener which listen the status change of process
+	 * instance
+	 * 
+	 * @param listener
+	 */
+	public void addProcessInstanceListener(ProcessInstanceListener listener) {
+		EventManager.getEventManager().addProcessInstanceListener(listener);
+	}
+
+	public void removeProcessInstanceListener(ProcessInstanceListener listener) {
+		EventManager.getEventManager().removeProcessInstanceListener(listener);
+	}
+
+	/**
+	 * Add a ActivityListener which listen the status change of activity
+	 * 
+	 * @param listener
+	 */
+	public void addActivityListener(ActivityListener listener) {
+		EventManager.getEventManager().addActivityListener(listener);
+	}
+
+	public void removeActivityListener(ActivityListener listener) {
+		EventManager.getEventManager().removeActivityListener(listener);
+	}
+
+	/**
+	 * Add a TaskListener which listen the status change of task
+	 * 
+	 * @param listener
+	 */
+	public void addTaskListener(TaskListener listener) {
+		EventManager.getEventManager().addTaskListener(listener);
+	}
+
+	public void removeTaskListener(TaskListener listener) {
+		EventManager.getEventManager().removeTaskListener(listener);
+	}
+
+	// ///////////////
+	// private methods
+	// ///////////////
 	private void autosave() {
 		if (managedProcessInstances != null) {
 			for (ProcessInstance i : managedProcessInstances) {

@@ -23,7 +23,6 @@ import edu.thu.thss.twe.model.runtime.Variable;
 
 public class HibernateUtil {
 	public static final SessionFactory sessionFactory;
-
 	static {
 		try {
 			AnnotationConfiguration config = new AnnotationConfiguration();
@@ -42,7 +41,6 @@ public class HibernateUtil {
 					ProcessInstance.class).addAnnotatedClass(Task.class)
 					.addAnnotatedClass(Token.class).addAnnotatedClass(
 							Variable.class);
-
 			sessionFactory = config.configure().buildSessionFactory();
 		} catch (HibernateException e) {
 			// TODO Auto-generated catch block
@@ -51,8 +49,10 @@ public class HibernateUtil {
 		}
 	}
 
+	
 	public static final ThreadLocal<Session> session = new ThreadLocal<Session>();
 
+	
 	public static Session currentSession() throws HibernateException {
 		Session s = session.get();
 
