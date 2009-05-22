@@ -34,6 +34,14 @@ public class ButtonPanel extends JPanel {
 		}
 	}
 
+	@Override
+	public void setEnabled(boolean enable) {
+		for (JButton b : buttons) {
+			b.setEnabled(enable);
+		}
+		super.setEnabled(enable);
+	}
+
 	private void rerange() {
 		box.removeAll();
 		for (JButton button : buttons) {
@@ -42,4 +50,5 @@ public class ButtonPanel extends JPanel {
 		}
 		this.repaint();
 	}
+
 }

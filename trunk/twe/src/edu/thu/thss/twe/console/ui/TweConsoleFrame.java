@@ -2,12 +2,17 @@ package edu.thu.thss.twe.console.ui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
@@ -45,6 +50,9 @@ public class TweConsoleFrame extends JFrame {
 
 	private void initComponents() {
 		this.tabbedPane = new JTabbedPane();
+		JMenuBar menubar = new JMenuBar();
+		menubar.add(generateMenu());
+		this.setJMenuBar(menubar);
 		this.add("Center", tabbedPane);
 		// pages
 		initConsolePages();
@@ -71,23 +79,67 @@ public class TweConsoleFrame extends JFrame {
 
 	public void start() {
 		this.setVisible(true);
-		if (login()) {
-			this.setTitle("Tiny Workflow Engine Console [authenticated as "
-					+ tweContext.getPerformerId() + "]");
-			for (ConsolePage page : pages) {
-				page.setTweContext(tweContext);
-			}
+		checkLogin();
 
-		}
 	}
 
 	public void notifyUpdate() {
+		updateControls();
 		for (ConsolePage page : pages) {
 			page.updateContent();
 		}
 	}
 
-	private boolean login() {
+	private JMenu generateMenu() {
+		JMenu menu = new JMenu("Menu");
+		JMenuItem login = new JMenuItem("Login");
+		JMenuItem logout = new JMenuItem("Logout");
+		JMenuItem exit = new JMenuItem("Exit");
+		login.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				login();
+			}
+		});
+		logout.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				logout();
+			}
+		});
+		exit.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				exit();
+			}
+		});
+		menu.add(login);
+		menu.add(logout);
+		menu.addSeparator();
+		menu.add(exit);
+		return menu;
+	}
+
+	private void updateControls() {
+		if (tweContext != null) {
+			if (tweContext.getPerformerId() == null) {
+				this.setTitle("Tiny Workflow Engine Console [unauthenticated]");
+			} else {
+				if (tweContext.isSuperMode()) {
+					this
+							.setTitle("Tiny Workflow Engine Console [authenticated as "
+									+ tweContext.getPerformerId()
+									+ "][Super Mode]");
+				} else {
+					this
+							.setTitle("Tiny Workflow Engine Console [authenticated as "
+									+ tweContext.getPerformerId() + "]");
+				}
+
+			}
+		} else {
+			this.setTitle("Tiny Workflow Engine Console [unauthenticated]");
+		}
+	}
+
+	private boolean checkLogin() {
 		LoginDialog dialog = new LoginDialog(this);
 		while (true) {
 			dialog.setVisible(true);
@@ -97,7 +149,6 @@ public class TweConsoleFrame extends JFrame {
 			}
 			if (dialog.validateInput()) {
 				if (autheticate(dialog.getUserName(), dialog.getPassword())) {
-
 					dialog.dispose();
 					tweContext.setPerformerId(dialog.getUserName());
 					return true;
@@ -106,11 +157,34 @@ public class TweConsoleFrame extends JFrame {
 		}
 	}
 
+	private void login() {
+		if (checkLogin()) {
+			for (ConsolePage page : pages) {
+				page.setTweContext(tweContext);
+			}
+
+		}
+		notifyUpdate();
+	}
+
+	private void logout() {
+		if (tweContext != null) {
+			tweContext.setPerformerId(null);
+			tweContext.setSuperMode(false);
+		}
+		notifyUpdate();
+	}
+
+	private void exit() {
+		tweContext.close();
+		System.exit(0);
+	}
+
 	private boolean autheticate(String id, String pwd) {
-		if (id.equals(pwd))
-			return true;
-		else
-			return false;
+		if (tweContext != null) {
+			return tweContext.authenticate(id, pwd);
+		}
+		return false;
 	}
 
 	class TweWindowListener extends WindowAdapter {

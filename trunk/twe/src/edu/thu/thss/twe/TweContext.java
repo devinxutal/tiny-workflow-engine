@@ -17,7 +17,7 @@ import edu.thu.thss.twe.model.runtime.Task;
 import edu.thu.thss.twe.model.runtime.Token;
 import edu.thu.thss.twe.session.ModelSession;
 import edu.thu.thss.twe.session.TaskSession;
-import edu.thu.thss.twe.util.HibernateUtil;
+import edu.thu.thss.twe.util.HibernateUtility;
 
 public class TweContext {
 
@@ -27,12 +27,17 @@ public class TweContext {
 	private String performerId = null;
 	private List<ProcessInstance> managedProcessInstances;
 	private Configuration configuration;
+	private boolean superMode = false;
 
 	public TweContext(Configuration config, Session session) {
 		this.configuration = config;
 		this.session = session;
 		modelSession = new ModelSession(this.session);
 		taskSession = new TaskSession(this.session);
+	}
+
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 	public ModelSession getModelSession() {
@@ -45,7 +50,7 @@ public class TweContext {
 
 	public void close() {
 		autosave();
-		HibernateUtil.currentSession().flush();
+		HibernateUtility.currentSession().flush();
 	}
 
 	/**
@@ -148,6 +153,41 @@ public class TweContext {
 			return false;
 		}
 		return false;
+	}
+
+	public boolean isSuperMode() {
+		return superMode;
+	}
+
+	public void setSuperMode(boolean superMode) {
+		this.superMode = superMode;
+	}
+
+	public boolean authenticate(String username, String password) {
+		String adminUserName = this.getConfiguration().getProperty(
+				"admin.username");
+		String adminPassword = this.getConfiguration().getProperty(
+				"admin.password");
+		if (username.equals(adminUserName)) {
+			if (password.equals(adminPassword)) {
+				this.setPerformerId(username);
+				this.setSuperMode(true);
+				return true;
+			} else {
+				this.setSuperMode(false);
+				this.setPerformerId(null);
+				return false;
+			}
+		} else {
+			this.setSuperMode(false);
+			boolean tag = validatePerformerId(username);
+			if (tag == true) {
+				this.setPerformerId(username);
+			} else {
+				this.setPerformerId(null);
+			}
+			return tag;
+		}
 	}
 
 	public void deployWorkflowProcess(WorkflowProcess process) {
@@ -263,4 +303,5 @@ public class TweContext {
 		}
 		managedProcessInstances.add(instance);
 	}
+
 }

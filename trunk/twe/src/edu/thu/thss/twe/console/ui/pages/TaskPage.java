@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -71,18 +72,28 @@ public class TaskPage extends ConsolePage implements ListSelectionListener,
 	}
 
 	public void updateContent() {
-		updateUI();
-		if (tweContext == null)
-			return;
-		taskTableModel.setItems(tweContext.getTaskList(false));
+		updateControls();
+		if (tweContext == null ||tweContext.getPerformerId() == null) {
+			taskTableModel.setItems(new LinkedList<Task>());
+		} else if (tweContext.isSuperMode()) {
+			taskTableModel.setItems(tweContext.getTaskList(false));
+		} else {
+			taskTableModel.setItems(tweContext.getTaskList(tweContext
+					.getPerformerId(), false));
+		}
+
 		taskTableModel.fireTableDataChanged();
-		updateUI();
+		updateControls();
 
 	}
 
-	public void updateUI() {
-		if (taskTable == null)
+	public void updateControls() {
+		if (tweContext == null) {
+			this.buttonPane.setEnabled(false);
 			return;
+		} else {
+			this.buttonPane.setEnabled(true);
+		}
 		if (taskTable.getSelectedRow() < 0) {
 			acceptButton.setEnabled(false);
 			finishButton.setEnabled(false);
@@ -104,7 +115,7 @@ public class TaskPage extends ConsolePage implements ListSelectionListener,
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		updateUI();
+		updateControls();
 	}
 
 	public void actionPerformed(ActionEvent e) {

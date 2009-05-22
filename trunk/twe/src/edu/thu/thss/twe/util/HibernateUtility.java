@@ -59,12 +59,14 @@ public class HibernateUtility {
 	}
 
 	public static SessionFactory getSessionFactory() {
-		synchronized (configuration) {
-			System.err.println("new session factory");
-			if (sessionFactory == null) {
-				sessionFactory = configuration.buildSessionFactory();
+		if (sessionFactory == null) {
+			synchronized (configuration) {
+				if (sessionFactory == null) {
+					sessionFactory = configuration.buildSessionFactory();
+				}
 			}
 		}
+
 		return sessionFactory;
 	}
 

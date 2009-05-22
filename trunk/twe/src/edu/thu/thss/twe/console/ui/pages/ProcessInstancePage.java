@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -70,19 +71,31 @@ public class ProcessInstancePage extends ConsolePage implements
 	}
 
 	public void updateContent() {
-		updateUI();
-		if (tweContext == null)
-			return;
-		instanceTableModel.setItems(tweContext.getModelSession()
-				.findAllProcessInstances());
-		instanceTableModel.fireTableDataChanged();
-		updateUI();
+		updateControls();
+		if (tweContext == null ||tweContext.getPerformerId() == null) {
+			instanceTableModel.setItems(new LinkedList<ProcessInstance>());
+		} else if (tweContext.isSuperMode()) {
+			instanceTableModel.setItems(tweContext.getModelSession()
+					.findAllProcessInstances());
+		} else {
+			instanceTableModel.setItems(new LinkedList<ProcessInstance>());
+		}
 
+		instanceTableModel.fireTableDataChanged();
+		updateControls();
 	}
 
-	public void updateUI() {
-		if (instanceTable == null)
+	public void updateControls() {
+		if (tweContext == null) {
+			this.buttonPane.setEnabled(false);
 			return;
+		}
+		if (!tweContext.isSuperMode()) {
+			this.buttonPane.setEnabled(false);
+			return;
+		}
+		this.buttonPane.setEnabled(true);
+
 		if (instanceTable.getSelectedRow() < 0) {
 			startButton.setEnabled(false);
 			deleteButton.setEnabled(false);
@@ -98,10 +111,11 @@ public class ProcessInstancePage extends ConsolePage implements
 			deleteButton.setEnabled(true);
 			detailButton.setEnabled(true);
 		}
+
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		updateUI();
+		updateControls();
 	}
 
 	public void actionPerformed(ActionEvent e) {
