@@ -2,28 +2,32 @@ package edu.thu.thss.twe.util;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import edu.thu.thss.twe.model.graph.Activity;
+import edu.thu.thss.twe.model.graph.Condition;
 import edu.thu.thss.twe.model.graph.Participant;
 import edu.thu.thss.twe.model.graph.Transition;
+import edu.thu.thss.twe.model.runtime.Token;
 
 public class DrawUtil {
 
 	private int height;
 	private int width;
-	private int itemHeight=35;
-	private int itemWidth=50;
+	private int itemHeight=45;
+	private int itemWidth=60;
 	private int intervalY;
 	private int shiftY=15;
-	private int transitionLength=30;
+	private int transitionLength=100;
 	int[] posYs;
 	List<String> segments;
 	Map<Activity, Point> activityPostionMap;
-	private Graphics graphic;
+	private Graphics2D graphic;
 	
 	
 	
@@ -34,19 +38,21 @@ public class DrawUtil {
 		this.width = width;
 	}
 	
-	public void setGraphic(Graphics graphic) {
+	public void setGraphic(Graphics2D graphic) {
 		this.graphic = graphic;
+		this.graphic.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	}
 	public void setActivityPostionMap(Map<Activity, Point> activityPostionMap) {
 		this.activityPostionMap = activityPostionMap;
 	}
 	
 	public void DrawInit(List<Participant> participants){
+		graphic.setColor(Color.WHITE);
+		graphic.fillRect(0, 0, width, height);
 
 		int size=participants.size();
 		intervalY=height/(size+1);
 		posYs=new int[size+1];
-		//itemHeight=intervalY/2;
 		segments=new LinkedList<String>();
 		
 		int i=0;
@@ -54,6 +60,7 @@ public class DrawUtil {
 			segments.add(participants.get(i).getName());
 		segments.add("Arbitray expression");
 		
+		graphic.setColor(Color.BLACK);
 		i=0;
 		for(;i<size;i++){
 			posYs[i]=intervalY*i;
@@ -70,12 +77,14 @@ public class DrawUtil {
 	public void DrawStartNode(Activity startActivity){
 		String segment=startActivity.getPerformer().getName();
 		int i=segments.indexOf(segment);
-		int posX=50;
+		int posX=100;
 		int posY=posYs[i]+shiftY;
 		graphic.setColor(Color.BLACK);
 		graphic.drawOval(posX, posY, itemHeight, itemHeight);
+		graphic.setColor(Color.YELLOW);
+		graphic.fillOval(posX+1, posY+1, itemHeight-1, itemHeight-1);
 		graphic.setColor(Color.BLACK);
-		graphic.drawString("Start",posX+5, posY+itemHeight/2);
+		graphic.drawString("Start",posX+10, posY+itemHeight/2);
 		posX+=itemHeight;
 		graphic.setColor(Color.BLUE);
 		DrawArrow(posX,posY+(itemHeight/2),posX+transitionLength,posY+(itemHeight/2));
@@ -94,30 +103,38 @@ public class DrawUtil {
 		posY=p.y;
 		graphic.setColor(Color.BLACK);
 		graphic.drawOval(posX, posY, itemHeight, itemHeight);
+		graphic.setColor(Color.YELLOW);
+		graphic.fillOval(posX+1, posY+1, itemHeight-1, itemHeight-1);
 		graphic.setColor(Color.BLACK);
-		graphic.drawString("End",posX+5, posY+itemHeight/2);
+		graphic.drawString("End",posX+10, posY+itemHeight/2);
 	}
 	public void DrawActivity(Activity activity){
 		Point p=activityPostionMap.get(activity);
 		int posX=p.x;
 		int posY=p.y;
 		graphic.setColor(Color.BLACK);
-		graphic.drawRoundRect(posX, posY, itemWidth, itemHeight,5,5);
+		graphic.drawRoundRect(posX, posY, itemWidth, itemHeight,10,10);
+		if(activity.isRoute())
+			graphic.setColor(Color.PINK);
+		else
+			graphic.setColor(Color.CYAN);
+		graphic.fillRoundRect(posX+1, posY+1, itemWidth-1, itemHeight-1,10,10);
 		graphic.setColor(Color.BLACK);
-		graphic.drawString(activity.getName(),posX, posY+itemHeight/2);
+		graphic.drawString(activity.getName(),posX+5, posY+itemHeight/2);
+		
 	}
 	public void DrawTransition(Transition transition){
 		Activity sourceActivity=transition.getSourceActivity();
 		Point p=activityPostionMap.get(sourceActivity);
-		int startX=p.x+itemWidth;
-		int startY=p.y+(itemHeight/2);
+		int startX=p.x;
+		int startY=p.y;
 		
 		int endX,endY;
 		Activity targetActivity=transition.getTargetActivity();	
 		p=activityPostionMap.get(targetActivity);
 		if(p!=null){
 			endX=p.x;
-			endY=p.y+(itemHeight/2);
+			endY=p.y;
 		}else{
 			endX=startX+transitionLength;
 			if(targetActivity.isTaskActivity()==true){
@@ -129,9 +146,34 @@ public class DrawUtil {
 			}
 			Point targetPosition=new Point(endX,endY);
 			activityPostionMap.put(targetActivity, targetPosition);
-			endY=endY+(itemHeight/2);
 		}
+		
+		if(startY==endY){
+			startY+=(itemHeight/2);
+			endY=startY;
+			if(startX<endX)
+				startX+=itemWidth;
+			else
+				endX+=itemWidth;
+		}else{
+			startX+=itemWidth/2;
+			endX+=itemWidth/2;
+			if(startY<endY)
+				startY+=itemHeight;
+			else
+				endY+=itemHeight;
+		}
+		
 		DrawArrow(startX,startY, endX, endY);
+		Condition condition=transition.getCondition();
+		if(condition!=null){
+			String expression=transition.getCondition().getExpression();
+			if(expression!=null){
+				graphic.setColor(Color.BLACK);
+				graphic.drawString(expression,(startX+endX)/2, (startY+endY)/2+shiftY);
+			}
+		}
+		
 		
 		
 	}
@@ -201,6 +243,28 @@ public class DrawUtil {
 		return mathstr; 
 
 	}
-
+	
+	public void DrawToken(Token token){
+		int h=10;
+		if(token.getState()==Token.TokenState.Active){
+			Activity currentActivity=token.getCurrentActivity();
+			if(currentActivity.isTaskActivity()){
+				Point p=activityPostionMap.get(currentActivity);
+				graphic.setColor(Color.LIGHT_GRAY);
+				int posX=p.x+itemWidth/2;
+				int posY=p.y+itemHeight/2+5;
+				graphic.fillOval(posX, posY, h, h);
+				return;
+			}else{
+				List<Token> children=token.getChildren();
+				if(children!=null){
+					for(int i=0;i<children.size();i++){
+						Token childToken=children.get(i);
+						DrawToken(childToken);
+					}
+				}
+			}
+		}
+	}
 
 }
