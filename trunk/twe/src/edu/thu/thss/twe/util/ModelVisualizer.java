@@ -17,6 +17,7 @@ import edu.thu.thss.twe.model.graph.Participant;
 import edu.thu.thss.twe.model.graph.Transition;
 import edu.thu.thss.twe.model.graph.WorkflowProcess;
 import edu.thu.thss.twe.model.runtime.ProcessInstance;
+import edu.thu.thss.twe.model.runtime.Token;
 
 /**
  * This class used to visualize the bussiness model and create a image to give
@@ -26,8 +27,8 @@ import edu.thu.thss.twe.model.runtime.ProcessInstance;
  * 
  */
 public class ModelVisualizer {
-	public static int DEFAULT_HEIGHT = 500;
-	public static int DEFAULT_WIDTH = 750;
+	public static int DEFAULT_HEIGHT = 700;
+	public static int DEFAULT_WIDTH = 1100;
 
 	public Image visualizeProcessInstance(ProcessInstance instance) {
 		return visualizeProcessInstance(instance, new Dimension(DEFAULT_WIDTH,
@@ -36,16 +37,34 @@ public class ModelVisualizer {
 
 	public Image visualizeProcessInstance(ProcessInstance instance,
 			Dimension dimension) {
-		return null;
+		WorkflowProcess process=instance.getWorkflowProcess();
+		Map<Activity, Point> activityPostionMap=new HashMap<Activity, Point>();
+		Image image=visualizeStaticProcess(process,dimension,activityPostionMap);
+		Token roottoken=instance.getRootToken();
+		Graphics2D graphic = (Graphics2D) image.getGraphics(); 
+		int height=dimension.height;
+		int width=dimension.width;
+		DrawUtil drawUtil=new DrawUtil();
+		drawUtil.setGraphic(graphic);
+		drawUtil.setHeight(height);
+		drawUtil.setWidth(width);
+		drawUtil.setActivityPostionMap(activityPostionMap);
+		drawUtil.DrawToken(roottoken);
+		return image;
 	}
 
 	public Image visualizeWorkflowProcess(WorkflowProcess process) {
 		return visualizeWorkflowProcess(process, new Dimension(DEFAULT_WIDTH,
 				DEFAULT_HEIGHT));
 	}
-
 	public Image visualizeWorkflowProcess(WorkflowProcess process,
 			Dimension dimension) {
+		Map<Activity, Point> activityPostionMap=new HashMap<Activity, Point>();
+		Image image=visualizeStaticProcess(process,dimension,activityPostionMap);
+		return image;
+	}
+	public Image visualizeStaticProcess(WorkflowProcess process,
+			Dimension dimension,Map<Activity, Point> activityPostionMap) {
 		int height=dimension.height;
 		int width=dimension.width;
 		
@@ -56,10 +75,8 @@ public class ModelVisualizer {
 		
 		BufferedImage image=new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphic = image.createGraphics(); 
-		graphic.setColor(Color.BLACK);
 
 		List<Transition> queue=new LinkedList<Transition>();
-		Map<Activity, Point> activityPostionMap=new HashMap<Activity, Point>();
 		Map<Transition, Boolean> transitionDrawMap=new HashMap<Transition, Boolean>();
 		
 		DrawUtil drawUtil=new DrawUtil();
