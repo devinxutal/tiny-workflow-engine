@@ -152,8 +152,6 @@ public class WorkflowProcessPage extends ConsolePage implements
 		ModelVisualizer visualizer = new ModelVisualizer();
 		ImageDialog dialog = new ImageDialog(consoleFrame);
 		Image img = visualizer.visualizeWorkflowProcess(process);
-		if (img == null)
-			img = Toolkit.getDefaultToolkit().getImage("resources/flower.jpg");
 		dialog.setImage(img);
 		dialog.setVisible(true);
 		dialog.dispose();
@@ -198,7 +196,7 @@ public class WorkflowProcessPage extends ConsolePage implements
 		int code = showConfirm("This operation will delete the process and all the instances of this process, sure to delete?");
 		if (code == JOptionPane.OK_OPTION) {
 			try {
-				tweContext.getModelSession().deleteWorkflowProcess(process);
+				tweContext.getModelSession().deleteWorkflowProcess(process.getId());
 				showMessage("Delete succeed");
 			} catch (TweException e) {
 				showErrorMessage("Delete failed, error occured while writing the database.");

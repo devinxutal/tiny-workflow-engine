@@ -12,7 +12,7 @@ public abstract class WorkflowElement {
 	long id;
 	protected String elementId;
 	protected String name;
-	protected String descrioption;
+	protected String description;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,12 +43,12 @@ public abstract class WorkflowElement {
 	}
 
 	@Basic
-	public String getDescrioption() {
-		return descrioption;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setDescrioption(String descrioption) {
-		this.descrioption = descrioption;
+	public void setDescription(String descrioption) {
+		this.description = descrioption;
 	}
 
 }

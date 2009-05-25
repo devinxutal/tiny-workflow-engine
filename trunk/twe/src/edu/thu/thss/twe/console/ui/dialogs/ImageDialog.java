@@ -12,8 +12,8 @@ import edu.thu.thss.twe.console.ui.panels.ImagePanel;
 
 public class ImageDialog extends JDialog {
 
-	private static int HEIGHT = 500;
-	private static int WIDTH = 600;
+	private static int HEIGHT = 800;
+	private static int WIDTH = 1100;
 
 	private ImagePanel imagePanel;
 

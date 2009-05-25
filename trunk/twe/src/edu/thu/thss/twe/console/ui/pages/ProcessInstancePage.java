@@ -143,7 +143,6 @@ public class ProcessInstancePage extends ConsolePage implements
 		ModelVisualizer visualizer = new ModelVisualizer();
 		ImageDialog dialog = new ImageDialog(consoleFrame);
 		Image img = visualizer.visualizeProcessInstance(process);
-		img = Toolkit.getDefaultToolkit().getImage("resources/flower.jpg");
 		dialog.setImage(img);
 		dialog.setVisible(true);
 		dialog.dispose();

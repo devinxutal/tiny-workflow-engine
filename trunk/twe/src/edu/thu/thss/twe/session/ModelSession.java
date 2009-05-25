@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -73,7 +74,8 @@ public class ModelSession {
 
 	public void deleteWorkflowProcess(WorkflowProcess process) {
 		if (process == null) {
-			throw new IllegalArgumentException("WorkflowProcess cannot be null");
+			throw new TweException(
+					"cannot delete process, WorkflowProcess cannot be null");
 		}
 		Transaction tx = null;
 		try {
@@ -86,6 +88,7 @@ public class ModelSession {
 			for (Long processInstanceId : CollectionUtil.checkList(
 					processInstanceIds, Long.class)) {
 				ProcessInstance processInstance = loadProcessInstance(processInstanceId);
+				System.err.println("delete a process instance");
 				if (processInstance != null) {
 					deleteProcessInstanceWithoutCommit(processInstance);
 				} else {
@@ -94,7 +97,7 @@ public class ModelSession {
 			}
 			// then delete the workflow process
 			session.delete(process);
-			session.getTransaction().commit();
+			tx.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (tx != null)
@@ -194,6 +197,8 @@ public class ModelSession {
 	 */
 	public List<WorkflowProcess> findAllWorkflowProcesses() {
 		try {
+			session.flush();
+			session.setFlushMode(FlushMode.ALWAYS);
 			List<?> workflowProcesss = session.createQuery(
 					"from WorkflowProcess order by name asc, version desc")
 					.list();
