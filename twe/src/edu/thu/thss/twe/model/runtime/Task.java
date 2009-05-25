@@ -244,7 +244,7 @@ public class Task {
 	@Transient
 	public boolean isSubmissionNeeded() {
 
-		return (this.getActivity().getSubmissions() != null);
+		return (this.getActivity().getSubmissions() != null && this.getActivity().getSubmissions().size()>0);
 	}
 
 	private boolean allVariablesSubmitted() {

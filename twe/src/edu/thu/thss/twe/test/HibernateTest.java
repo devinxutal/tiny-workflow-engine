@@ -64,7 +64,7 @@ public class HibernateTest {
 			System.out.println(process.getName());
 			Configuration.getConfiguration().getTweContext()
 					.deployWorkflowProcess(process);
-			process.setDescrioption("ahahhaha");
+			process.setDescription("ahahhaha");
 			Configuration.getConfiguration().getTweContext().getModelSession()
 					.saveWorkflowProcess(process);
 			;

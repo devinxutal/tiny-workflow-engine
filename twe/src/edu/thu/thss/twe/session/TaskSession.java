@@ -1,6 +1,7 @@
 package edu.thu.thss.twe.session;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -119,10 +120,17 @@ public class TaskSession {
 	 */
 	public List<Task> findTasks(String performerId) {
 		try {
-			return findTasks(loadParticipant(performerId));
+			List<Task> tsks = new LinkedList<Task>();
+			for (Participant p : findParticipants(performerId)) {
+				Query query = session.createQuery(find_tasks_by_performer_id);
+				query.setLong("pid", p.getId());
+				List<?> tasks = query.list();
+				tsks.addAll(CollectionUtil.checkList(tasks, Task.class));
+			}
+			return tsks;
 		} catch (Exception e) {
 
-			throw new TweException("could not find alltasks", e);
+			throw new TweException("could not find tasks", e);
 		}
 	}
 
@@ -177,16 +185,22 @@ public class TaskSession {
 		}
 	}
 
+	/**
+	 * load a participant by its element id
+	 * 
+	 * @param elementId
+	 * @return the first participant with the element id
+	 */
 	public Participant loadParticipant(String elementId) {
 		try {
 			String queryStr = "from Participant where elementId=:id";
 			Query query = session.createQuery(queryStr);
 			query.setString("id", elementId);
 			List<?> participants = query.list();
-			if (participants.size() > 1) {
-				throw new TweException("duplicate participants with elementId="
-						+ elementId);
-			}
+			// if (participants.size() > 1) {
+			// throw new TweException("duplicate participants with elementId="
+			// + elementId);
+			// }
 			if (participants.size() == 0) {
 				return null;
 			}
@@ -198,6 +212,32 @@ public class TaskSession {
 		}
 	}
 
+	/**
+	 * load all participant with this element id
+	 * 
+	 * @param elementId
+	 * @return all participant with this element id
+	 */
+	public List<Participant> findParticipants(String elementId) {
+		try {
+			String queryStr = "from Participant where elementId=:id";
+			Query query = session.createQuery(queryStr);
+			query.setString("id", elementId);
+			List<?> participants = query.list();
+			return CollectionUtil.checkList(participants, Participant.class);
+		} catch (Exception e) {
+
+			throw new TweException("cannot find participant with elementId="
+					+ elementId, e);
+		}
+	}
+
+	/**
+	 * load a participant by its id.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public Participant loadParticipant(long id) {
 		try {
 			return (Participant) session.get(Participant.class, new Long(id));

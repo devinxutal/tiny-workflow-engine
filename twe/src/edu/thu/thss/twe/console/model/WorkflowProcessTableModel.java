@@ -51,7 +51,7 @@ public class WorkflowProcessTableModel extends AbstractTableModel {
 		case 1:
 			return process.getName();
 		case 2:
-			return process.getDescrioption();
+			return process.getDescription();
 		case 3:
 			return process.getVersion();
 		default:

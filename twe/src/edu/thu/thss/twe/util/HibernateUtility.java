@@ -2,6 +2,8 @@ package edu.thu.thss.twe.util;
 
 import java.util.Map;
 
+import org.hibernate.CacheMode;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -63,6 +65,7 @@ public class HibernateUtility {
 		if (sessionFactory == null) {
 			synchronized (configuration) {
 				if (sessionFactory == null) {
+					System.err.println("in buildSessionFactory()");
 					sessionFactory = configuration.buildSessionFactory();
 				}
 			}
@@ -79,6 +82,8 @@ public class HibernateUtility {
 		if (s == null) {
 			s = getSessionFactory().openSession();
 			session.set(s);
+			s.setFlushMode(FlushMode.ALWAYS);
+			s.setCacheMode(CacheMode.PUT);
 		}
 
 		return s;

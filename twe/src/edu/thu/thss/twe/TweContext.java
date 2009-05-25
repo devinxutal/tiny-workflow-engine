@@ -206,7 +206,11 @@ public class TweContext {
 	 */
 	public WorkflowProcess loadWorkflowProcess(long id, boolean autosave) {
 		// WorkflowProcess process =
-		return null;
+		WorkflowProcess process = modelSession.loadWorkflowProcess(id);
+		if (process != null && autosave) {
+			// TODO
+		}
+		return process;
 	}
 
 	/**
@@ -220,7 +224,11 @@ public class TweContext {
 	 * @return the loaded ProcessInstance, or null if it dosen't exist.
 	 */
 	public ProcessInstance loadProcessInstance(long id, boolean autosave) {
-		return null;
+		ProcessInstance process = modelSession.loadProcessInstance(id);
+		if (process != null && autosave) {
+			addManagedProcessInstance(process);
+		}
+		return process;
 	}
 
 	/**
@@ -234,7 +242,11 @@ public class TweContext {
 	 * @return the loaded Token, or null if it dosen't exist.
 	 */
 	public Token loadToken(long id, boolean autosave) {
-		return null;
+		Token token = modelSession.loadToken(id);
+		if (token != null && autosave) {
+			addManagedProcessInstance(token.getProcessInstance());
+		}
+		return token;
 	}
 
 	public void save(ProcessInstance instance) {

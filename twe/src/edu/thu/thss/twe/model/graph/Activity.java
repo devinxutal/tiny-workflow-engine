@@ -484,6 +484,7 @@ public class Activity extends WorkflowElement {
 					parentToken.getChildren().clear();
 					parentToken.setChildren(null);
 					// TODO delete the tokens from database?
+					parentToken.setState(Token.TokenState.Active);
 					return parentToken;
 				} else {
 					// delete all the arrived tokens
