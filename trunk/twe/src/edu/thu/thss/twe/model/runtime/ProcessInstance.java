@@ -152,18 +152,39 @@ public class ProcessInstance {
 
 	}
 
+	/**
+	 * signal the root token to leave the current activity and move forward.
+	 */
 	public void signal() {
 		rootToken.signal();
 	}
 
+	/**
+	 * signal the root token to leave the current activity and move forward
+	 * along the specified transition.
+	 * 
+	 * @deprecated
+	 */
 	public void signal(String transitionName) {
 		rootToken.signal(transitionName);
 	}
 
+	/**
+	 * signal the root token to leave the current activity and move forward
+	 * along the specified transition.
+	 * 
+	 * @deprecated
+	 */
 	public void signal(Transition transition) {
 		rootToken.signal(transition);
 	}
 
+	/**
+	 * add a task to this instance
+	 * 
+	 * @param task
+	 *            the task to be added¡£
+	 */
 	public void addTask(Task task) {
 		if (this.tasks == null) {
 			tasks = new LinkedList<Task>();
@@ -172,6 +193,12 @@ public class ProcessInstance {
 		task.setProcessInstance(this);
 	}
 
+	/**
+	 * remove a task from this instance
+	 * 
+	 * @param task
+	 *            the task to be removed.
+	 */
 	public void removeTask(Task task) {
 		task.setProcessInstance(null);
 		if (this.tasks == null) {
@@ -180,6 +207,12 @@ public class ProcessInstance {
 		this.tasks.remove(task);
 	}
 
+	/**
+	 * add a variable to the process instance.
+	 * 
+	 * @param v
+	 *            the variable to be added.
+	 */
 	public void addVariable(Variable v) {
 		if (this.variables == null) {
 			variables = new LinkedList<Variable>();
@@ -188,6 +221,12 @@ public class ProcessInstance {
 		v.setProcessInstance(this);
 	}
 
+	/**
+	 * remove a variable
+	 * 
+	 * @param v
+	 *            the variable to be removed
+	 */
 	public void removeVariable(Variable v) {
 		v.setProcessInstance(null);
 		if (this.variables == null) {
@@ -196,6 +235,10 @@ public class ProcessInstance {
 		variables.remove(v);
 	}
 
+	/**
+	 * start this process. this will make the root token to move forward to the
+	 * first activity.
+	 */
 	public void start() {
 		startProcess(this.getWorkflowProcess().getStartActivity());
 		this.state = InstanceState.Started;

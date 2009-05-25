@@ -144,6 +144,9 @@ public class Task {
 	// Model Methods
 	// //////////////////////
 
+	/**
+	 * start this task.
+	 */
 	public void start() {
 		if (this.getState() != TaskState.Created) {
 			throw new TweException("task " + this + " cannot be start again!");
@@ -156,6 +159,11 @@ public class Task {
 						.getToken()));
 	}
 
+	/**
+	 * finish this task, after finishing this task, the token will move forward to the
+	 * next activity.
+	 * 
+	 */
 	public void finish() {
 		if (this.getState() != TaskState.Started) {
 			throw new TweException("task " + this
@@ -176,6 +184,12 @@ public class Task {
 		this.getToken().signal();
 	}
 
+	/**
+	 * Submit the required variables of this task. the submission list is defined in
+	 * the relevant activity
+	 * 
+	 * @param submissions the submission map
+	 */
 	public void submitVariables(Map<Submission, String> submissions) {
 		if (this.getActivity().getSubmissions() == null) {
 			if (submissions.size() != 0) {
@@ -214,6 +228,11 @@ public class Task {
 		}
 	}
 
+	/**
+	 * determines whether this task can be finished.
+	 * 
+	 * @return
+	 */
 	public boolean canFinish() {
 		return allVariablesSubmitted();
 	}
