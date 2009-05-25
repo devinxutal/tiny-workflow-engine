@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: edu.thu.thss.twe.Twe
+Class-Path: hibernate3.jar hibernate-annotations.jar hibernate-commons-annotations.jar ejb3-persistence.jar mysql-connector-java-5.1.6-bin.jar antlr-2.7.6.jar commons-collections-3.1.jar dom4j-1.6.1.jar javassist-3.4.GA.jar jta-1.1.jar slf4j-log4j12-1.5.6.jar slf4j-api-1.5.6.jar log4j-1.2.15.jar
+
+

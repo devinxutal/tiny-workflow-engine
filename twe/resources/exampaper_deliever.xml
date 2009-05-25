@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://www.wfmc.org/2002/XPDL1.0" xmlns:xpdl="http://www.wfmc.org/2002/XPDL1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Id="newpkg1" Name="default" xsi:schemaLocation="http://www.wfmc.org/2002/XPDL1.0 http://wfmc.org/standards/docs/TC-1025_schema_10_xpdl.xsd">
+<PackageHeader>
+<XPDLVersion>1.0</XPDLVersion>
+<Vendor>Together</Vendor>
+<Created>2009-05-12 15:32:48</Created>
+</PackageHeader>
+<WorkflowProcesses>
+<WorkflowProcess Id="chujuan_fenfa" Name="出卷分发">
+<ProcessHeader>
+<Created>2009-05-12 15:33:34</Created>
+</ProcessHeader>
+<DataFields>
+<DataField Id="newpkg1_wp1_df1" IsArray="FALSE" Name="approved">
+<DataType>
+<BasicType Type="BOOLEAN"/>
+</DataType>
+<InitialValue>false</InitialValue>
+</DataField>
+</DataFields>
+<Participants>
+<Participant Id="newpkg1_wp1_par1" Name="王老师">
+<ParticipantType Type="ROLE"/>
+</Participant>
+<Participant Id="newpkg1_wp1_par2" Name="助教1">
+<ParticipantType Type="ROLE"/>
+</Participant>
+<Participant Id="newpkg1_wp1_par3" Name="助教2">
+<ParticipantType Type="ROLE"/>
+</Participant>
+<Participant Id="newpkg1_wp1_par4" Name="助理">
+<ParticipantType Type="ROLE"/>
+</Participant>
+<Participant Id="ta3" Name="ta3">
+<ParticipantType Type="ROLE"/>
+</Participant>
+</Participants>
+<Activities>
+<Activity Id="newpkg1_wp1_act1" Name="通知出卷">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>newpkg1_wp1_par1</Performer>
+</Activity>
+<Activity Id="newpkg1_wp1_act2" Name="出选择题">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>newpkg1_wp1_par2</Performer>
+</Activity>
+<Activity Id="newpkg1_wp1_act3" Name="出问答题">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>newpkg1_wp1_par3</Performer>
+</Activity>
+<Activity Id="newpkg1_wp1_act4" Name="Split1">
+<Route/>
+<TransitionRestrictions>
+<TransitionRestriction>
+<Join Type="XOR"/>
+<Split Type="AND">
+<TransitionRefs>
+<TransitionRef Id="newpkg1_wp1_tra2"/>
+<TransitionRef Id="newpkg1_wp1_tra3"/>
+</TransitionRefs>
+</Split>
+</TransitionRestriction>
+</TransitionRestrictions>
+</Activity>
+<Activity Id="newpkg1_wp1_act5" Name="Join1">
+<Route/>
+<TransitionRestrictions>
+<TransitionRestriction>
+<Join Type="AND"/>
+</TransitionRestriction>
+</TransitionRestrictions>
+</Activity>
+<Activity Id="newpkg1_wp1_act6" Name="审核">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>newpkg1_wp1_par1</Performer>
+</Activity>
+<Activity Id="newpkg1_wp1_act7" Name="Split2">
+<Route/>
+<TransitionRestrictions>
+<TransitionRestriction>
+<Split Type="XOR">
+<TransitionRefs>
+<TransitionRef Id="newpkg1_wp1_tra9"/>
+<TransitionRef Id="newpkg1_wp1_tra8"/>
+</TransitionRefs>
+</Split>
+</TransitionRestriction>
+</TransitionRestrictions>
+</Activity>
+<Activity Id="newpkg1_wp1_act8" Name="打印试卷">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>newpkg1_wp1_par4</Performer>
+</Activity>
+<Activity Id="newpkg1_wp1_act9" Name="分发试卷">
+<Implementation>
+<No/>
+</Implementation>
+<Performer>ta3</Performer>
+</Activity>
+</Activities>
+<Transitions>
+<Transition From="newpkg1_wp1_act1" Id="newpkg1_wp1_tra1" To="newpkg1_wp1_act4"/>
+<Transition From="newpkg1_wp1_act4" Id="newpkg1_wp1_tra2" To="newpkg1_wp1_act2"/>
+<Transition From="newpkg1_wp1_act4" Id="newpkg1_wp1_tra3" To="newpkg1_wp1_act3"/>
+<Transition From="newpkg1_wp1_act2" Id="newpkg1_wp1_tra4" To="newpkg1_wp1_act5"/>
+<Transition From="newpkg1_wp1_act3" Id="newpkg1_wp1_tra5" To="newpkg1_wp1_act5"/>
+<Transition From="newpkg1_wp1_act5" Id="newpkg1_wp1_tra6" To="newpkg1_wp1_act6"/>
+<Transition From="newpkg1_wp1_act6" Id="newpkg1_wp1_tra7" To="newpkg1_wp1_act7"/>
+<Transition From="newpkg1_wp1_act7" Id="newpkg1_wp1_tra8" Name="审核不通过" To="newpkg1_wp1_act4">
+<Condition Type="CONDITION">approved == false</Condition>
+</Transition>
+<Transition From="newpkg1_wp1_act7" Id="newpkg1_wp1_tra9" Name="审核通过" To="newpkg1_wp1_act8">
+<Condition Type="CONDITION">approved == true</Condition>
+</Transition>
+<Transition From="newpkg1_wp1_act8" Id="newpkg1_wp1_tra10" To="newpkg1_wp1_act9"/>
+</Transitions>
+</WorkflowProcess>
+</WorkflowProcesses>
+</Package>
