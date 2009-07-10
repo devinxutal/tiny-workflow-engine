@@ -1,5 +1,6 @@
 package edu.thu.thss.twe.test;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.io.File;
@@ -21,7 +22,7 @@ public class ModelVisualizerTest {
 
 	public void test() {
 		JFrame frame = new JFrame("Test");
-		frame.setBounds(200, 200, 800, 600);
+		frame.setBounds(200, 200, 1100, 700);
 		JPanel panel = new ImagePanel();
 		frame.add(panel);
 		frame.setVisible(true);
@@ -35,8 +36,9 @@ public class ModelVisualizerTest {
 			Parser parser = ParserFactory.getXmlParser();
 			try {
 				WorkflowProcess process = parser.parse(new FileInputStream(
-						new File("sample xpdl/test.xml")));
+						new File("D:/twe/workspace/twe/resources/exampaper.xml")));
 				image = new ModelVisualizer().visualizeWorkflowProcess(process);
+				//this.setBackground(Color.WHITE);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
